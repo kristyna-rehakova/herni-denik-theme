@@ -4,7 +4,7 @@
  */
 if (!defined('ABSPATH')) exit;
 
-define('HD_VERSION', '0.1.0');
+define('HD_VERSION', '0.2.0');
 
 function hd_setup() {
     add_theme_support('title-tag');
@@ -22,6 +22,7 @@ add_action('wp_enqueue_scripts', 'hd_assets');
 require get_template_directory() . '/inc/helpers.php';
 require get_template_directory() . '/inc/cpt.php';
 require get_template_directory() . '/inc/meta.php';
+if (is_admin()) require get_template_directory() . '/inc/import.php';
 
 /**
  * Přesměruj nepřihlášené na login (skupinový deník = jen pro členy).

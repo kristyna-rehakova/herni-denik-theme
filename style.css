@@ -5,7 +5,7 @@ GitHub Theme URI: https://github.com/kristyna-rehakova/herni-denik-theme
 Update URI: https://github.com/kristyna-rehakova/herni-denik-theme
 Description: Skupinový deník deskových her — sbírka (Herna), odehrané hry (Deník), hráči. Vlastní typy obsahu + přihlášení a role přes WordPress. Nasazení přes GitHub Updater / WP Pusher.
 Author: Herní deník
-Version: 0.2.2
+Version: 0.3.0
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
@@ -50,11 +50,62 @@ main{max-width:1100px;margin:22px auto;padding:0 16px 60px}
 /* karty her */
 .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}
-.game-card{overflow:hidden;display:flex;flex-direction:column;text-decoration:none;color:inherit}
+.game-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column}
+.game-card .card-link{display:flex;flex-direction:column;flex:1;text-decoration:none;color:inherit}
 .game-card .thumb{position:relative;aspect-ratio:1/1;background:#e6ecd6;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:2.8rem}
 .game-card .thumb img{width:100%;height:100%;object-fit:cover}
 .game-card .body{padding:12px 14px;display:flex;flex-direction:column;gap:8px;flex:1}
 .game-card h3{font-size:1.1rem}
+.playcount{font-size:.82rem;color:var(--muted);margin-top:auto}
+.card-actions{display:flex;gap:8px;padding:10px 14px;border-top:1px solid var(--line);flex-wrap:wrap}
+.card-actions .btn.small{flex:1;justify-content:center}
+.card-actions a.btn.small{flex:0 0 auto}
+
+/* panel filtrů */
+.page-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.page-head .page-title{margin:0}
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:12px 14px;margin-bottom:10px}
+.toolbar input,.toolbar select{padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--ink);font-size:.9rem;font-family:inherit}
+.toolbar #hdSearch{flex:1;min-width:180px}
+.toolbar .hd-view{margin-left:auto;display:flex;gap:6px}
+.hd-view-btn{width:38px;height:38px;border:1px solid var(--line);background:#fff;border-radius:10px;cursor:pointer;font-size:1.1rem;color:var(--wood-dark)}
+.hd-view-btn.active{background:var(--accent);border-color:var(--accent)}
+.hd-resultcount{color:var(--muted);font-size:.85rem;margin:0 4px 12px}
+
+/* seznamové zobrazení */
+.grid.list{display:flex;flex-direction:column;gap:10px}
+.grid.list .game-card{flex-direction:row;align-items:stretch}
+.grid.list .card-link{flex-direction:row;align-items:center;gap:14px;flex:1;min-width:0}
+.grid.list .thumb{width:72px;height:72px;aspect-ratio:auto;flex:0 0 auto;border-radius:10px;margin:10px 0 10px 10px;font-size:1.6rem}
+.grid.list .body{padding:10px 6px}
+.grid.list .playcount{margin-top:4px}
+.grid.list .card-actions{border-top:none;border-left:1px solid var(--line);flex-direction:column;justify-content:center;flex-wrap:nowrap}
+.grid.list .card-actions .btn.small{flex:0 0 auto}
+@media(max-width:560px){.grid.list .game-card{flex-direction:column}.grid.list .card-actions{border-left:none;border-top:1px solid var(--line);flex-direction:row}}
+
+/* hláška po akci */
+.hd-flash{padding:12px 16px;border-radius:12px;margin-bottom:14px;font-weight:600}
+.hd-flash.ok{background:#dff0df;color:#2e7d32;border:1px solid #bfe3bf}
+.hd-flash.err{background:#f6d9d2;color:#c0392b;border:1px solid #eec4ba}
+.detail-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+/* okno „Zapsat partii" */
+.hd-modal{position:fixed;inset:0;z-index:100;display:flex;align-items:flex-start;justify-content:center;padding:30px 16px;overflow:auto}
+.hd-modal[hidden]{display:none}
+.hd-modal-bg{position:fixed;inset:0;background:rgba(40,50,30,.5)}
+.hd-modal-card{position:relative;background:var(--panel);border-radius:var(--radius);box-shadow:0 20px 60px rgba(0,0,0,.3);width:100%;max-width:520px;padding:22px;z-index:1}
+.hd-modal-card h2{margin-bottom:16px}
+.hd-modal-x{position:absolute;top:10px;right:14px;border:none;background:none;font-size:1.8rem;line-height:1;cursor:pointer;color:var(--muted)}
+.hd-fld{display:flex;flex-direction:column;gap:5px;font-size:.9rem;font-weight:600;color:var(--muted);margin-bottom:14px}
+.hd-fld input,.hd-fld select,.hd-fld textarea{padding:9px 12px;border:1px solid var(--line);border-radius:10px;font-family:inherit;font-size:.95rem;color:var(--ink);font-weight:400}
+.hd-fld legend{margin-bottom:8px}
+.hd-players{display:flex;flex-direction:column;gap:4px;max-height:260px;overflow:auto}
+.hd-prow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:5px 8px;border:1px solid var(--line);border-radius:10px;font-weight:400}
+.hd-pchk{display:flex;align-items:center;gap:8px;flex:1;cursor:pointer}
+.hd-wchk{display:flex;align-items:center;gap:4px;cursor:pointer;white-space:nowrap}
+.hd-wchk input:disabled{opacity:.3}
+.hd-modal-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:6px}
+.hd-hint{font-size:.85rem;color:var(--muted);font-weight:400}
 .chk{font-size:.62em;vertical-align:middle;opacity:.9}
 .meta{display:flex;gap:6px;flex-wrap:wrap}
 .pill{background:#e9edf3;border:1px solid #dbe1ea;color:#59637a;border-radius:999px;padding:2px 10px;font-size:.78rem;font-weight:600}

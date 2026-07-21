@@ -70,3 +70,27 @@ function hd_format_date($ymd) {
     if (!$t) return $ymd;
     return date_i18n('j. n. Y', $t);
 }
+
+/** Počet odehraných partií dané hry. */
+function hd_play_count($game_id) {
+    $q = new WP_Query([
+        'post_type' => 'partie', 'post_status' => 'publish', 'fields' => 'ids',
+        'posts_per_page' => -1, 'meta_key' => 'game', 'meta_value' => (int) $game_id,
+        'no_found_rows' => true,
+    ]);
+    return $q->post_count;
+}
+
+/** Seznam všech her jako [id => název] (abecedně). */
+function hd_all_games() {
+    $out = [];
+    foreach (get_posts(['post_type'=>'hra','numberposts'=>-1,'orderby'=>'title','order'=>'ASC']) as $p) $out[$p->ID] = $p->post_title;
+    return $out;
+}
+
+/** Seznam všech hráčů jako [id => zobrazované jméno] (abecedně dle jména). */
+function hd_all_players() {
+    $out = [];
+    foreach (get_posts(['post_type'=>'hrac','numberposts'=>-1,'orderby'=>'title','order'=>'ASC']) as $p) $out[$p->ID] = hd_player_name($p->ID);
+    return $out;
+}

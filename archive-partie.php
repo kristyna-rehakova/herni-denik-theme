@@ -25,6 +25,14 @@ if ($plays->have_posts()) {
 }
 krsort($by_day);
 ?>
+<?php if (isset($_GET['hd_play'])): ?>
+  <?php if ($_GET['hd_play'] === 'ok'): ?>
+    <div class="hd-flash ok">✅ Partie byla zapsána do Deníku.</div>
+  <?php else: ?>
+    <div class="hd-flash err">⚠️ Partii se nepodařilo uložit (chybí hra?). Zkus to prosím znovu.</div>
+  <?php endif; ?>
+<?php endif; ?>
+
 <h1 class="page-title">📖 Deník</h1>
 
 <?php if (current_user_can('edit_posts')): ?>

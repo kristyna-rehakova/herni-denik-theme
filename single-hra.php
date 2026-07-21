@@ -57,8 +57,13 @@ $plays = new WP_Query([
         <?php if ($purl) echo '<a class="btn small" href="' . esc_url($purl) . '" target="_blank" rel="noopener">Odkaz na MINDOK</a>'; ?>
       </div>
       <?php if ($notes) echo '<div class="notes">📝 ' . nl2br(esc_html($notes)) . '</div>'; ?>
-      <?php if (current_user_can('edit_post', $id)): ?>
-        <p><a class="btn small" href="<?php echo esc_url(get_edit_post_link($id)); ?>">✏️ Upravit info</a></p>
+      <?php if (is_user_logged_in()): ?>
+        <p class="detail-actions">
+          <button type="button" class="btn js-open-play" data-game="<?php echo $id; ?>">🎲 Zapsat partii</button>
+          <?php if (current_user_can('edit_post', $id)): ?>
+            <a class="btn small ghost" href="<?php echo esc_url(get_edit_post_link($id)); ?>">✏️ Upravit info</a>
+          <?php endif; ?>
+        </p>
       <?php endif; ?>
     </div>
   </div>

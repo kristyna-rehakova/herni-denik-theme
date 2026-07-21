@@ -1,0 +1,8 @@
+# OS / editor smetí
+Thumbs.db
+Desktop.ini
+.DS_Store
+*.swp
+*.tmp
+.vscode/
+.idea/

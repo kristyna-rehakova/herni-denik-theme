@@ -21,12 +21,12 @@ function hd_find_by_src($type, $src_id) {
     return $q ? (int) $q[0] : 0;
 }
 
-/** weight (1–3) → obtížnost. */
+/** weight (číselná váha, i desetinná) → obtížnost. Stejné hranice jako v původní appce. */
 function hd_import_diff($w) {
-    $w = (int) $w;
+    $w = is_numeric($w) ? (float) $w : 0;
     if ($w <= 0) return '';
-    if ($w == 1) return 'lehka';
-    if ($w == 2) return 'stredni';
+    if ($w < 2.5) return 'lehka';
+    if ($w < 3.5) return 'stredni';
     return 'tezka';
 }
 
@@ -69,7 +69,8 @@ function hd_import_page() {
     echo '<form method="post" enctype="multipart/form-data">';
     wp_nonce_field('hd_import');
     echo '<table class="form-table"><tr><th>Soubor zálohy (.json)</th><td><input type="file" name="hd_file" accept="application/json,.json" required> <p class="description">Limit nahrávání serveru: ' . esc_html($max) . '</p></td></tr>';
-    echo '<tr><th>Obálky</th><td><label><input type="checkbox" name="hd_covers" value="1" checked> Stáhnout obálky her z webu (může chvíli trvat; když se nějaká nestáhne, hra se přesto vytvoří)</label></td></tr></table>';
+    echo '<tr><th>Obálky</th><td><label><input type="checkbox" name="hd_covers" value="1" checked> Stáhnout obálky her z webu (může chvíli trvat; když se nějaká nestáhne, hra se přesto vytvoří)</label></td></tr>';
+    echo '<tr><th>Přepsat existující</th><td><label><input type="checkbox" name="hd_overwrite" value="1"> Aktualizovat údaje u her/hráčů/partií, které už existují (např. oprava obtížnosti). Obálky se u existujících stáhnou jen tam, kde chybí.</label></td></tr></table>';
     submit_button('Spustit import', 'primary', 'hd_import_go');
     echo '</form></div>';
 }
@@ -84,38 +85,48 @@ function hd_run_import() {
     if (!is_array($data) || !isset($data['games'])) { echo '<div class="notice notice-error"><p>Soubor nevypadá jako platná záloha (chybí „games").</p></div>'; return; }
 
     $do_covers = !empty($_POST['hd_covers']);
+    $overwrite = !empty($_POST['hd_overwrite']);
     @set_time_limit(0);
 
     $map_player = []; $map_game = [];
-    $n_pl = 0; $n_g = 0; $n_p = 0; $skip = 0; $cov_ok = 0; $cov_fail = 0; $fails = [];
+    $n_pl = 0; $n_g = 0; $n_p = 0; $skip = 0; $upd = 0; $cov_ok = 0; $cov_fail = 0; $fails = [];
 
     // 1) HRÁČI
     foreach ((array)($data['players'] ?? []) as $pl) {
         $src = $pl['id'] ?? '';
         $exist = hd_find_by_src('hrac', $src);
-        if ($exist) { $map_player[$src] = $exist; $skip++; continue; }
-        $id = wp_insert_post(['post_type'=>'hrac','post_status'=>'publish','post_title'=>($pl['name'] ?: ($pl['nick'] ?: 'Hráč'))]);
-        if (is_wp_error($id)) continue;
+        if ($exist && !$overwrite) { $map_player[$src] = $exist; $skip++; continue; }
+        if ($exist) { $id = $exist; $upd++; }
+        else {
+            $id = wp_insert_post(['post_type'=>'hrac','post_status'=>'publish','post_title'=>($pl['name'] ?: ($pl['nick'] ?: 'Hráč'))]);
+            if (is_wp_error($id)) continue;
+            $n_pl++;
+        }
         update_post_meta($id, 'hd_src_id', $src);
         update_post_meta($id, 'nick', $pl['nick'] ?? '');
         update_post_meta($id, 'color', $pl['color'] ?? '#eeb088');
         update_post_meta($id, 'emoji', $pl['emoji'] ?? '');
-        $map_player[$src] = $id; $n_pl++;
+        $map_player[$src] = $id;
     }
 
     // 2) HRY
     foreach ((array)($data['games'] ?? []) as $g) {
         $src = $g['id'] ?? '';
         $exist = hd_find_by_src('hra', $src);
-        if ($exist) { $map_game[$src] = $exist; $skip++; continue; }
-        $id = wp_insert_post(['post_type'=>'hra','post_status'=>'publish','post_title'=>($g['name'] ?: 'Hra')]);
-        if (is_wp_error($id)) continue;
+        if ($exist && !$overwrite) { $map_game[$src] = $exist; $skip++; continue; }
+        if ($exist) { $id = $exist; $upd++; }
+        else {
+            $id = wp_insert_post(['post_type'=>'hra','post_status'=>'publish','post_title'=>($g['name'] ?: 'Hra')]);
+            if (is_wp_error($id)) continue;
+            $n_g++;
+        }
         update_post_meta($id, 'hd_src_id', $src);
         update_post_meta($id, 'players_min', $g['minPlayers'] ?? '');
         update_post_meta($id, 'players_max', $g['maxPlayers'] ?? '');
         update_post_meta($id, 'time_min', $g['minTime'] ?? '');
         update_post_meta($id, 'time_max', $g['maxTime'] ?? '');
         update_post_meta($id, 'difficulty', hd_import_diff($g['weight'] ?? 0));
+        update_post_meta($id, 'weight', $g['weight'] ?? '');
         update_post_meta($id, 'year', $g['year'] ?? '');
         update_post_meta($id, 'publisher', $g['publisher'] ?? '');
         update_post_meta($id, 'bgg_url', $g['bggUrl'] ?? '');
@@ -131,22 +142,28 @@ function hd_run_import() {
         // pozice ořezu (pro budoucí využití)
         update_post_meta($id, 'img_x', $g['imgX'] ?? '');
         update_post_meta($id, 'img_y', $g['imgY'] ?? '');
-        if ($do_covers && !empty($g['image'])) {
+        // obálku stahuj u nové hry, nebo u existující jen když ještě žádnou nemá
+        if ($do_covers && !empty($g['image']) && !has_post_thumbnail($id)) {
             if (hd_import_cover($g['image'], $id, $g['name'] ?? '')) $cov_ok++;
             else { $cov_fail++; $fails[] = $g['name'] ?? $src; }
         }
-        $map_game[$src] = $id; $n_g++;
+        $map_game[$src] = $id;
     }
 
     // 3) PARTIE
     foreach ((array)($data['plays'] ?? []) as $p) {
         $src = $p['id'] ?? '';
-        if (hd_find_by_src('partie', $src)) { $skip++; continue; }
+        $exist = hd_find_by_src('partie', $src);
+        if ($exist && !$overwrite) { $skip++; continue; }
         $gid = $map_game[$p['gameId'] ?? ''] ?? 0;
         $gname = $gid ? get_the_title($gid) : 'Partie';
         $title = trim($gname . ' ' . ($p['date'] ?? ''));
-        $id = wp_insert_post(['post_type'=>'partie','post_status'=>'publish','post_title'=>$title]);
-        if (is_wp_error($id)) continue;
+        if ($exist) { $id = $exist; wp_update_post(['ID'=>$id, 'post_title'=>$title]); $upd++; }
+        else {
+            $id = wp_insert_post(['post_type'=>'partie','post_status'=>'publish','post_title'=>$title]);
+            if (is_wp_error($id)) continue;
+            $n_p++;
+        }
         update_post_meta($id, 'hd_src_id', $src);
         update_post_meta($id, 'game', $gid);
         update_post_meta($id, 'play_date', $p['date'] ?? '');
@@ -155,13 +172,13 @@ function hd_run_import() {
         $winners = array_values(array_filter(array_map(function($x) use ($map_player){ return $map_player[$x] ?? 0; }, (array)($p['winnerIds'] ?? []))));
         update_post_meta($id, 'players', $players);
         update_post_meta($id, 'winners', $winners);
-        $n_p++;
     }
 
-    echo '<div class="notice notice-success"><p><strong>Hotovo!</strong> Naimportováno: ' .
+    echo '<div class="notice notice-success"><p><strong>Hotovo!</strong> Nově vytvořeno: ' .
         $n_g . ' her, ' . $n_pl . ' hráčů, ' . $n_p . ' partií.' .
+        ($upd ? ' Aktualizováno existujících: ' . $upd . '.' : '') .
         ($skip ? ' Přeskočeno (už existovalo): ' . $skip . '.' : '') .
-        ($do_covers ? ' Obálky: ' . $cov_ok . ' OK, ' . $cov_fail . ' se nepodařilo stáhnout.' : '') .
+        ($do_covers ? ' Obálky: ' . $cov_ok . ' nově staženo, ' . $cov_fail . ' se nepodařilo.' : '') .
         '</p>';
     if ($fails) echo '<p>Bez obálky (můžeš doplnit ručně): ' . esc_html(implode(', ', array_slice($fails, 0, 60))) . '</p>';
     echo '<p><a class="button button-primary" href="' . esc_url(home_url('/')) . '">Otevřít Hernu →</a></p></div>';

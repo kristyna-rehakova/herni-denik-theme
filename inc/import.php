@@ -77,6 +77,9 @@ function hd_import_page() {
 function hd_run_import() {
     if (empty($_FILES['hd_file']['tmp_name'])) { echo '<div class="notice notice-error"><p>Nebyl nahrán žádný soubor.</p></div>'; return; }
     $raw = file_get_contents($_FILES['hd_file']['tmp_name']);
+    // odstraň případný UTF-8 BOM (Windows) – jinak json_decode selže
+    $raw = preg_replace('/^\xEF\xBB\xBF/', '', $raw);
+    $raw = trim($raw);
     $data = json_decode($raw, true);
     if (!is_array($data) || !isset($data['games'])) { echo '<div class="notice notice-error"><p>Soubor nevypadá jako platná záloha (chybí „games").</p></div>'; return; }
 

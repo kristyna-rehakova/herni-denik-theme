@@ -5,7 +5,7 @@ GitHub Theme URI: https://github.com/kristyna-rehakova/herni-denik-theme
 Update URI: https://github.com/kristyna-rehakova/herni-denik-theme
 Description: Skupinový deník deskových her — sbírka (Herna), odehrané hry (Deník), hráči. Vlastní typy obsahu + přihlášení a role přes WordPress. Nasazení přes GitHub Updater / WP Pusher.
 Author: Herní deník
-Version: 0.3.0
+Version: 0.3.1
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
@@ -15,8 +15,8 @@ Text Domain: herni-denik
 */
 
 :root{
-  --bg:#eef3e0; --panel:#fff; --ink:#3f4536; --muted:#7d8570; --line:#dde5cc;
-  --accent:#eeb088; --accent-2:#5e8b6e; --wood-dark:#46503a;
+  --bg:#eef3e0; --bg2:#e8efd7; --panel:#fff; --ink:#3f4536; --muted:#7d8570; --line:#dde5cc;
+  --wood:#f6e3d1; --wood-dark:#46503a; --accent:#eeb088; --accent-2:#5e8b6e; --gold:#f0c9a0;
   --radius:16px; --shadow:0 6px 18px rgba(70,80,50,.10);
 }
 *{box-sizing:border-box}
@@ -28,16 +28,17 @@ h1,h2,h3{font-family:Georgia,"Times New Roman",serif;color:var(--wood-dark);marg
 a{color:inherit}
 img{max-width:100%;height:auto}
 
-/* hlavička */
-.site-header{background:linear-gradient(135deg,#008B00,#006e00);color:#f2f0e2;box-shadow:0 3px 14px rgba(0,70,0,.2);position:sticky;top:0;z-index:20}
+/* hlavička – zlatavý motiv jako v původním návrhu */
+.site-header{background:linear-gradient(135deg,#FFC125,#F0A400);color:#5a4712;box-shadow:0 3px 14px rgba(180,130,0,.22);position:sticky;top:0;z-index:20}
 .site-header .wrap{max-width:1100px;margin:0 auto;padding:16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.site-header h1,.site-header a.brand{color:#f6f3e6;font-size:1.5rem;text-decoration:none;display:flex;align-items:center;gap:10px}
+.site-header h1,.site-header a.brand{color:#5a4712;font-size:1.5rem;text-decoration:none;display:flex;align-items:center;gap:10px}
 .site-header .spacer{flex:1}
 .nav{display:flex;gap:6px;flex-wrap:wrap;list-style:none;margin:0;padding:0}
-.nav a{background:rgba(255,255,255,.14);color:#f2f0e2;border:1px solid rgba(255,255,255,.22);padding:8px 16px;border-radius:999px;text-decoration:none;font-size:.95rem}
-.nav a:hover,.nav .current-menu-item a{background:#fff;color:#7a5c10}
-.site-header .userbox{font-size:.85rem;color:#f2f0e2}
-.site-header .userbox a{color:#fff}
+.nav a{background:rgba(255,255,255,.5);color:#5a4712;border:1px solid rgba(120,90,0,.15);padding:8px 16px;border-radius:999px;text-decoration:none;font-size:.95rem;transition:.15s}
+.nav a:hover{background:rgba(255,255,255,.72)}
+.nav .current-menu-item a,.nav .current_page_item a{background:#fff;color:#7a5c10;border-color:#fff;font-weight:600}
+.site-header .userbox{font-size:.85rem;color:#5a4712}
+.site-header .userbox a{color:#5a4712;font-weight:600}
 
 main{max-width:1100px;margin:22px auto;padding:0 16px 60px}
 .page-title{margin-bottom:16px}

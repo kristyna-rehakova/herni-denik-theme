@@ -80,8 +80,12 @@ function hd_handle_save_game() {
         if (isset($_POST[$k])) update_post_meta($gid, $k, sanitize_textarea_field(wp_unslash($_POST[$k])));
     }
 
-    // obrázek z URL (jen když je zadaná a hra zatím obálku nemá)
+    // obrázek: z pole „URL obrázku"; když prázdné a hra nemá obálku, zkus dohledat ze Zatrolených podle odkazu
     $img = trim(wp_unslash($_POST['image_url'] ?? ''));
+    if (!$img && !has_post_thumbnail($gid)) {
+        $bgg = trim(wp_unslash($_POST['bgg_url'] ?? ''));
+        if ($bgg && function_exists('hd_resolve_zatrolene_cover')) $img = hd_resolve_zatrolene_cover($bgg);
+    }
     if ($img && !has_post_thumbnail($gid)) {
         require_once ABSPATH . 'wp-admin/includes/media.php';
         require_once ABSPATH . 'wp-admin/includes/file.php';

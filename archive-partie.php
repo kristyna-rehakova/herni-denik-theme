@@ -1,6 +1,6 @@
 <?php
 /**
- * Deník = archiv partií, seskupeno po dnech (nejnovější nahoře).
+ * Deník = odehrané hry, seskupeno po dnech (nejnovější nahoře) + filtry.
  */
 if (!defined('ABSPATH')) exit;
 get_header();
@@ -13,7 +13,6 @@ $plays = new WP_Query([
     'order'          => 'DESC',
 ]);
 
-// seskupení do polí podle data
 $by_day = [];
 if ($plays->have_posts()) {
     while ($plays->have_posts()) { $plays->the_post();
@@ -24,64 +23,90 @@ if ($plays->have_posts()) {
     wp_reset_postdata();
 }
 krsort($by_day);
+
+$all_players = hd_all_players();
+$all_games   = hd_all_games();
 ?>
 <?php if (isset($_GET['hd_play'])): ?>
   <?php if ($_GET['hd_play'] === 'ok'): ?>
     <div class="hd-flash ok">✅ Partie byla zapsána do Deníku.</div>
+  <?php elseif ($_GET['hd_play'] === 'del'): ?>
+    <div class="hd-flash ok">🗑️ Partie byla přesunuta do koše.</div>
   <?php else: ?>
     <div class="hd-flash err">⚠️ Partii se nepodařilo uložit (chybí hra?). Zkus to prosím znovu.</div>
   <?php endif; ?>
 <?php endif; ?>
 
-<h1 class="page-title">📖 Deník</h1>
-
 <?php if (is_user_logged_in()): ?>
   <p><button type="button" class="btn big js-open-play">🎲 Zapsat do Deníku</button></p>
 <?php endif; ?>
 
+<h1 class="page-title">📖 Odehrané hry</h1>
+
 <?php if ($by_day): ?>
+  <div class="toolbar card denik-filters">
+    <select id="fPlayer" aria-label="Hráč">
+      <option value="">Hráč</option>
+      <?php foreach ($all_players as $id => $name) echo '<option value="' . (int)$id . '">' . esc_html($name) . '</option>'; ?>
+    </select>
+    <select id="fWinner" aria-label="Vítěz">
+      <option value="">Vítěz 🏆</option>
+      <?php foreach ($all_players as $id => $name) echo '<option value="' . (int)$id . '">' . esc_html($name) . '</option>'; ?>
+    </select>
+    <select id="fGame" aria-label="Hra">
+      <option value="">Hra</option>
+      <?php foreach ($all_games as $id => $name) echo '<option value="' . (int)$id . '">' . esc_html($name) . '</option>'; ?>
+    </select>
+    <span class="dater">od <input type="date" id="fFrom"></span>
+    <span class="dater">do <input type="date" id="fTo"></span>
+  </div>
+
+  <div id="denikList">
   <?php foreach ($by_day as $day => $pids): ?>
-    <section class="day">
-      <h2 class="day-head"><?php echo esc_html(hd_format_date($day)); ?></h2>
+    <section class="day" data-day="<?php echo esc_attr($day); ?>">
+      <h2 class="day-head"><?php echo esc_html(hd_format_day($day)); ?> <span class="day-count"><?php echo count($pids); ?>×</span></h2>
       <?php foreach ($pids as $pid):
         $gid = (int) hd_meta($pid, 'game');
-        $players = (array) hd_meta($pid, 'players', []);
-        $winners = (array) hd_meta($pid, 'winners', []);
+        $players = array_map('intval', (array) hd_meta($pid, 'players', []));
+        $winners = array_map('intval', (array) hd_meta($pid, 'winners', []));
+        $ext_players = (array) hd_meta($pid, 'ext_players', []);
+        $ext_winners = (array) hd_meta($pid, 'ext_winners', []);
         $note = hd_meta($pid, 'note');
+        $pnames = array_merge(array_map('hd_player_name', $players), $ext_players);
+        $wnames = array_merge(array_map('hd_player_name', $winners), $ext_winners);
       ?>
-        <div class="play-row">
+        <div class="play-row2"
+             data-players="<?php echo esc_attr(implode(',', $players)); ?>"
+             data-winners="<?php echo esc_attr(implode(',', $winners)); ?>"
+             data-game="<?php echo (int)$gid; ?>"
+             data-date="<?php echo esc_attr(hd_meta($pid, 'play_date')); ?>">
           <?php if ($gid): ?>
-            <a class="play-thumb" href="<?php echo esc_url(get_permalink($gid)); ?>">
-              <?php echo has_post_thumbnail($gid) ? get_the_post_thumbnail($gid, 'thumbnail') : '🎲'; ?>
-            </a>
-            <div class="play-body">
-              <a class="play-name" href="<?php echo esc_url(get_permalink($gid)); ?>"><?php echo esc_html(get_the_title($gid)); ?></a>
+            <a class="play-thumb" href="<?php echo esc_url(get_permalink($gid)); ?>"><?php echo hd_cover_inner($gid); ?></a>
           <?php else: ?>
             <div class="play-thumb">🎲</div>
-            <div class="play-body">
-              <span class="play-name">(smazaná hra)</span>
           <?php endif; ?>
-              <?php
-                $ext_players = (array) hd_meta($pid, 'ext_players', []);
-                $ext_winners = (array) hd_meta($pid, 'ext_winners', []);
-              ?>
-              <div class="pplayers">
-                <?php foreach ($players as $hp) {
-                    $win = in_array((string)$hp, array_map('strval', $winners), true);
-                    echo '<span class="pl-wrap' . ($win ? ' win' : '') . '" title="' . esc_attr(hd_player_name($hp)) . ($win ? ' 🏆' : '') . '">' . hd_player_avatar($hp, 28) . ($win ? ' 🏆' : '') . '</span>';
-                }
-                foreach ($ext_players as $en) {
-                    $win = in_array($en, $ext_winners, true);
-                    echo '<span class="pl-wrap' . ($win ? ' win' : '') . '" title="' . esc_attr($en) . ' (host)' . ($win ? ' 🏆' : '') . '">' . hd_ext_avatar($en, 28) . ($win ? ' 🏆' : '') . '</span>';
-                } ?>
-              </div>
-              <?php if ($note) echo '<div class="pnote">📝 ' . nl2br(esc_html($note)) . '</div>'; ?>
-              <?php if (current_user_can('edit_post', $pid)) echo '<button type="button" class="edit-link js-edit-play" data-hd="' . hd_play_edit_json($pid) . '">✏️</button>'; ?>
+          <div class="info">
+            <?php if ($gid): ?>
+              <a class="play-name" href="<?php echo esc_url(get_permalink($gid)); ?>"><?php echo esc_html(get_the_title($gid)); ?></a>
+            <?php else: ?>
+              <span class="play-name">(smazaná hra)</span>
+            <?php endif; ?>
+            <?php if ($pnames) echo '<div class="pl-line">👥 ' . esc_html(implode(', ', $pnames)) . '</div>'; ?>
+            <?php if ($wnames) echo '<div class="win-line">🏆 ' . esc_html(implode(', ', $wnames)) . '</div>'; ?>
+            <?php if ($note) echo '<div class="pnote">📝 ' . nl2br(esc_html($note)) . '</div>'; ?>
+          </div>
+          <?php if (current_user_can('edit_post', $pid)): ?>
+            <div class="play-actions">
+              <button type="button" class="icon-btn ic-edit js-edit-play" data-hd="<?php echo hd_play_edit_json($pid); ?>" title="Upravit">✏️</button>
+              <a class="icon-btn ic-del js-del-play" href="<?php echo esc_url(wp_nonce_url(admin_url('admin-post.php?action=hd_delete_play&id=' . $pid), 'hd_delplay_' . $pid)); ?>" data-name="<?php echo esc_attr($gid ? get_the_title($gid) : 'partii'); ?>" title="Smazat">🗑️</a>
             </div>
+          <?php endif; ?>
         </div>
       <?php endforeach; ?>
     </section>
   <?php endforeach; ?>
+  </div>
+  <p class="hd-noresult" id="denikEmpty" hidden>Žádná partie neodpovídá filtru.</p>
 <?php else: ?>
   <div class="empty card" style="padding:50px 20px">📖 Deník je zatím prázdný. Zapiš první partii!</div>
 <?php endif; ?>

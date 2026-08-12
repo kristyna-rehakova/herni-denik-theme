@@ -206,6 +206,18 @@ function hd_handle_add_play() {
 }
 add_action('admin_post_hd_add_play', 'hd_handle_add_play');
 
+/** Smazání partie z Deníku (do koše). */
+function hd_handle_delete_play() {
+    $id = intval($_GET['id'] ?? 0);
+    if (!$id || get_post_type($id) !== 'partie') wp_die('Neplatná partie.');
+    if (!current_user_can('edit_post', $id)) wp_die('Na smazání partie nemáš oprávnění.');
+    check_admin_referer('hd_delplay_' . $id);
+    wp_trash_post($id);
+    wp_safe_redirect(add_query_arg('hd_play', 'del', get_post_type_archive_link('partie')));
+    exit;
+}
+add_action('admin_post_hd_delete_play', 'hd_handle_delete_play');
+
 /** Smazání hry z webu (do koše – vratné). */
 function hd_handle_delete_game() {
     $id = intval($_GET['id'] ?? 0);

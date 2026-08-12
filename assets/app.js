@@ -407,7 +407,36 @@
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !playerModal.hidden) closePlayer(); });
   }
 
-  /* ---------- POTVRZENÍ SMAZÁNÍ (hra i hráč) ---------- */
+  /* ---------- FILTRY DENÍKU ---------- */
+  var denik = document.getElementById('denikList');
+  if (denik) {
+    var rows = Array.prototype.slice.call(denik.querySelectorAll('.play-row2'));
+    var fP = gfEl('fPlayer'), fW = gfEl('fWinner'), fG = gfEl('fGame'), fFrom = gfEl('fFrom'), fTo = gfEl('fTo');
+    function idlist(s) { return (s || '').split(',').filter(Boolean); }
+    function applyDenik() {
+      rows.forEach(function (r) {
+        var ok = true;
+        if (fP && fP.value && idlist(r.dataset.players).indexOf(fP.value) === -1) ok = false;
+        if (fW && fW.value && idlist(r.dataset.winners).indexOf(fW.value) === -1) ok = false;
+        if (fG && fG.value && r.dataset.game !== fG.value) ok = false;
+        if (fFrom && fFrom.value && r.dataset.date && r.dataset.date < fFrom.value) ok = false;
+        if (fTo && fTo.value && r.dataset.date && r.dataset.date > fTo.value) ok = false;
+        r.style.display = ok ? '' : 'none';
+      });
+      var anyVisible = false;
+      denik.querySelectorAll('.day').forEach(function (day) {
+        var c = 0;
+        day.querySelectorAll('.play-row2').forEach(function (r) { if (r.style.display !== 'none') c++; });
+        day.style.display = c ? '' : 'none';
+        if (c) anyVisible = true;
+        var badge = day.querySelector('.day-count'); if (badge) badge.textContent = c + '×';
+      });
+      var empty = gfEl('denikEmpty'); if (empty) empty.hidden = anyVisible;
+    }
+    [fP, fW, fG, fFrom, fTo].forEach(function (el) { if (el) { el.addEventListener('change', applyDenik); el.addEventListener('input', applyDenik); } });
+  }
+
+  /* ---------- POTVRZENÍ SMAZÁNÍ (hra / hráč / partie) ---------- */
   document.addEventListener('click', function (e) {
     var del = e.target.closest('.js-del-game');
     if (del) {
@@ -417,6 +446,11 @@
     var delP = e.target.closest('.js-del-player');
     if (delP) {
       if (!window.confirm('Opravdu smazat hráče „' + (delP.dataset.name || '') + '"? Přesune se do koše.')) e.preventDefault();
+      return;
+    }
+    var delPlay = e.target.closest('.js-del-play');
+    if (delPlay) {
+      if (!window.confirm('Opravdu smazat tuto partii („' + (delPlay.dataset.name || '') + '")? Přesune se do koše.')) e.preventDefault();
     }
   });
 })();

@@ -5,7 +5,7 @@ GitHub Theme URI: https://github.com/kristyna-rehakova/herni-denik-theme
 Update URI: https://github.com/kristyna-rehakova/herni-denik-theme
 Description: Skupinový deník deskových her — sbírka (Herna), odehrané hry (Deník), hráči. Vlastní typy obsahu + přihlášení a role přes WordPress. Nasazení přes GitHub Updater / WP Pusher.
 Author: Herní deník
-Version: 0.9.0
+Version: 0.10.0
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
@@ -248,8 +248,25 @@ main{max-width:1100px;margin:22px auto;padding:0 16px 60px}
 .video-embed{position:relative;max-width:720px;aspect-ratio:16/9}
 .video-embed iframe{position:absolute;inset:0;width:100%;height:100%;border-radius:12px}
 
+/* deník – filtry */
+.denik-filters .dater{display:inline-flex;align-items:center;gap:6px;font-size:.85rem;color:var(--muted)}
+.denik-filters input[type=date]{padding:8px 10px;border:1px solid var(--line);border-radius:10px;font-family:inherit;color:var(--ink)}
+.hd-noresult{color:var(--muted);text-align:center;padding:30px}
+
 /* deník – řádky partií */
-.day-head{font-family:Georgia,serif;color:var(--wood-dark);font-weight:700;font-size:1.05rem;padding:6px 4px 8px;border-bottom:2px solid var(--line);margin-bottom:6px}
+.day{margin-bottom:20px}
+.day-head{font-family:Georgia,serif;color:var(--wood-dark);font-weight:700;font-size:1.08rem;padding:6px 4px 8px;border-bottom:2px solid var(--line);margin-bottom:8px;display:flex;align-items:baseline;gap:10px}
+.day-head .day-count{font-family:"Segoe UI",sans-serif;font-size:.72rem;font-weight:600;color:#fff;background:var(--accent-2);border-radius:999px;padding:2px 9px}
+.play-row2{display:flex;align-items:center;gap:14px;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:10px 12px;margin-bottom:8px}
+.play-row2 .play-thumb{position:relative;width:56px;height:56px;flex:0 0 auto;border-radius:10px;overflow:hidden;background:#e6ecd6;display:flex;align-items:center;justify-content:center;font-size:1.6rem;text-decoration:none}
+.play-row2 .info{flex:1;min-width:0}
+.play-row2 .play-name{font-weight:700;color:var(--wood-dark);text-decoration:none;font-size:1.05rem}
+.play-row2 .pl-line{font-size:.88rem;color:#5b6250;margin-top:2px}
+.play-row2 .win-line{font-size:.88rem;color:var(--accent-2);font-weight:600;margin-top:1px}
+.play-row2 .pnote{background:#fbf6e6;border-left:3px solid var(--gold);border-radius:6px;padding:5px 9px;font-size:.85rem;margin-top:4px}
+.play-actions{display:flex;gap:6px;flex:0 0 auto}
+.play-actions .icon-btn{width:40px;height:40px;font-size:1.05rem}
+.day-head-old{font-family:Georgia,serif;color:var(--wood-dark);font-weight:700;font-size:1.05rem;padding:6px 4px 8px;border-bottom:2px solid var(--line);margin-bottom:6px}
 .play-body{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px;position:relative}
 .play-name{font-weight:700;color:var(--wood-dark);text-decoration:none;font-size:1.05rem}
 .pplayers{display:flex;gap:6px;flex-wrap:wrap;align-items:center}

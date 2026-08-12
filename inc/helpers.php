@@ -80,6 +80,14 @@ function hd_format_date($ymd) {
     return date_i18n('j. n. Y', $t);
 }
 
+/** Datum → „Neděle 12. července 2026" (den v týdnu + měsíc slovy). */
+function hd_format_day($ymd) {
+    if (!$ymd) return '';
+    $t = strtotime($ymd);
+    if (!$t) return $ymd;
+    return ucfirst(date_i18n('l j. F Y', $t));
+}
+
 /** Inline styl obálky (background-image + pozice + velikost) z náhledového obrázku a meta. */
 function hd_cover_style($id) {
     $tid = get_post_thumbnail_id($id);

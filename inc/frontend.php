@@ -8,6 +8,10 @@ if (!defined('ABSPATH')) exit;
 function hd_front_assets() {
     if (is_front_page() || is_singular('hra') || is_post_type_archive('partie')) {
         wp_enqueue_script('hd-app', get_template_directory_uri() . '/assets/app.js', [], HD_VERSION, true);
+        wp_localize_script('hd-app', 'HD', [
+            'ajax'       => admin_url('admin-ajax.php'),
+            'parseNonce' => wp_create_nonce('hd_import_parse'),
+        ]);
     }
 }
 add_action('wp_enqueue_scripts', 'hd_front_assets');

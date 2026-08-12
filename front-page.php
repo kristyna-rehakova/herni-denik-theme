@@ -30,19 +30,13 @@ $total = $games->post_count;
 <?php if (isset($_GET['hd_cover']) && $_GET['hd_cover'] === 'ok'): ?>
   <div class="hd-flash ok">🖼 Obrázek byl uložen.</div>
 <?php endif; ?>
-<?php if (isset($_GET['hd_imp'])): ?>
-  <?php if ($_GET['hd_imp'] === 'none'): ?>
-    <div class="hd-flash err">⚠️ Z vloženého textu se nepodařilo nic rozpoznat. Zkontroluj, že jsi zkopírovala celou stránku hry.</div>
-  <?php elseif ($_GET['hd_imp'] === 'empty'): ?>
-    <div class="hd-flash err">⚠️ Vlož obsah stránky (nebo aspoň odkaz na hru).</div>
-  <?php else: ?>
-    <div class="hd-flash err">⚠️ Import se nepodařil. Zkus to prosím znovu.</div>
-  <?php endif; ?>
+<?php if (isset($_GET['hd_saved']) && $_GET['hd_saved'] === 'ok'): ?>
+  <div class="hd-flash ok">✅ Hra byla uložena.</div>
 <?php endif; ?>
 
 <?php if (current_user_can('edit_posts')): ?>
   <div class="topbtns">
-    <a class="btn big" href="<?php echo esc_url(admin_url('post-new.php?post_type=hra')); ?>">♟️ Přidat deskovku</a>
+    <button type="button" class="btn big js-open-gameform">♟️ Přidat deskovku</button>
     <button type="button" class="btn big secondary js-open-import">📋 Import</button>
   </div>
 <?php endif; ?>

@@ -4,7 +4,7 @@
  */
 if (!defined('ABSPATH')) exit;
 
-define('HD_VERSION', '0.6.0');
+define('HD_VERSION', '0.7.0');
 
 function hd_setup() {
     add_theme_support('title-tag');
@@ -25,6 +25,7 @@ require get_template_directory() . '/inc/meta.php';
 require get_template_directory() . '/inc/frontend.php';
 require get_template_directory() . '/inc/stats.php';
 require get_template_directory() . '/inc/import-paste.php';
+require get_template_directory() . '/inc/gameform.php';
 if (is_admin()) require get_template_directory() . '/inc/import.php';
 
 /**

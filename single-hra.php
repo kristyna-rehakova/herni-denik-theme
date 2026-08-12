@@ -39,6 +39,9 @@ $plays = new WP_Query([
 <?php if (isset($_GET['hd_cover']) && $_GET['hd_cover'] === 'ok'): ?>
   <div class="hd-flash ok">🖼 Obrázek byl uložen.</div>
 <?php endif; ?>
+<?php if (isset($_GET['hd_saved']) && $_GET['hd_saved'] === 'ok'): ?>
+  <div class="hd-flash ok">✅ Hra byla uložena.</div>
+<?php endif; ?>
 <p><a class="btn back" href="<?php echo esc_url(home_url('/')); ?>">← Zpět do Herny</a></p>
 
 <article class="detail">

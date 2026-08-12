@@ -116,7 +116,7 @@ function hd_resolve_zatrolene_cover($url) {
     return '';
 }
 
-/* ---------------- modální okno importu ---------------- */
+/* ---------------- modální okno importu (krok 1: vložení obsahu) ---------------- */
 function hd_import_modal() {
     if (!current_user_can('edit_posts') || !is_front_page()) return;
     ?>
@@ -133,77 +133,56 @@ function hd_import_modal() {
             <li>Vlož obsah dolů a dej „Načíst".</li>
           </ol>
         </div>
-        <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
-          <input type="hidden" name="action" value="hd_import_paste">
-          <?php wp_nonce_field('hd_import_paste', 'hd_import_nonce'); ?>
-          <label class="hd-fld">Obsah stránky
-            <textarea name="content" rows="6" placeholder="Sem vlož zkopírovaný obsah stránky (Ctrl+V)…"></textarea>
-          </label>
-          <label class="hd-fld">Odkaz na stránku hry <span class="hd-hint">(nepovinné — u Zatrolených doplní obálku a odkaz)</span>
-            <input type="url" name="url" placeholder="https://…">
-          </label>
-          <p class="hd-hint">Rozpozná automaticky Zatrolené i Mindok. Vytvoří novou hru a otevře ji k úpravě.</p>
-          <div class="hd-modal-actions">
-            <button type="button" class="btn back js-close-import">Zrušit</button>
-            <button type="submit" class="btn">Načíst údaje →</button>
-          </div>
-        </form>
+        <label class="hd-fld">Obsah stránky
+          <textarea id="hdImportText" rows="6" placeholder="Sem vlož zkopírovaný obsah stránky (Ctrl+V)…"></textarea>
+        </label>
+        <label class="hd-fld">Odkaz na stránku hry <span class="hd-hint">(nepovinné — u Zatrolených doplní obálku a odkaz)</span>
+          <input type="url" id="hdImportUrl" placeholder="https://…">
+        </label>
+        <p class="hd-hint">Rozpozná automaticky Zatrolené i Mindok. Načtené údaje pak zkontroluješ v okně „Nová hra".</p>
+        <div class="hd-modal-actions">
+          <button type="button" class="btn back js-close-import">Zrušit</button>
+          <button type="button" class="btn js-import-parse">Načíst údaje →</button>
+        </div>
       </div>
     </div>
     <?php
 }
 add_action('wp_footer', 'hd_import_modal');
 
-/* ---------------- zpracování importu ---------------- */
-function hd_handle_import_paste() {
-    if (!current_user_can('edit_posts')) wp_die('Na import nemáš oprávnění.');
-    if (empty($_POST['hd_import_nonce']) || !wp_verify_nonce($_POST['hd_import_nonce'], 'hd_import_paste')) wp_die('Neplatný požadavek.');
-    $back = wp_get_referer() ?: home_url('/');
+/* ---------------- AJAX: rozparsuj vložený obsah a vrať data pro formulář ---------------- */
+function hd_ajax_import_parse() {
+    if (!current_user_can('edit_posts')) wp_send_json_error(['msg' => 'Nemáš oprávnění.'], 403);
+    check_ajax_referer('hd_import_parse', 'nonce');
     $text = wp_unslash($_POST['content'] ?? '');
     $url  = trim(wp_unslash($_POST['url'] ?? ''));
-    if (trim($text) === '' && $url === '') { wp_safe_redirect(add_query_arg('hd_imp', 'empty', $back)); exit; }
+    if (trim($text) === '' && $url === '') wp_send_json_error(['msg' => 'Vlož obsah stránky nebo aspoň odkaz na hru.']);
 
     $src = hd_detect_source($text);
     $data = ($src === 'mindok') ? hd_parse_mindok($text) : hd_parse_zatrolene($text, $url);
     if ($src === 'mindok' && $url) $data['pubUrl'] = $url;
-
     $cover = ($src !== 'mindok' && $url) ? hd_resolve_zatrolene_cover($url) : '';
 
     if (empty($data['name']) && empty($data['minPlayers']) && empty($data['minTime'])) {
-        wp_safe_redirect(add_query_arg('hd_imp', 'none', $back)); exit;
+        wp_send_json_error(['msg' => 'Z vloženého textu se nepodařilo nic rozpoznat. Zkontroluj, že jsi zkopírovala celou stránku hry.']);
     }
 
-    $id = wp_insert_post(['post_type' => 'hra', 'post_status' => 'publish', 'post_title' => ($data['name'] ?: 'Nová hra'), 'post_author' => get_current_user_id()]);
-    if (is_wp_error($id)) { wp_safe_redirect(add_query_arg('hd_imp', 'err', $back)); exit; }
-
-    if (isset($data['minPlayers'])) update_post_meta($id, 'players_min', $data['minPlayers']);
-    if (isset($data['maxPlayers'])) update_post_meta($id, 'players_max', $data['maxPlayers']);
-    if (isset($data['minTime']))    update_post_meta($id, 'time_min', $data['minTime']);
-    if (isset($data['maxTime']))    update_post_meta($id, 'time_max', $data['maxTime']);
-    if (isset($data['weight']))     { update_post_meta($id, 'weight', $data['weight']); update_post_meta($id, 'difficulty', hd_import_diff($data['weight'])); }
-    if (isset($data['year']))       update_post_meta($id, 'year', $data['year']);
-    if (isset($data['publisher']))  update_post_meta($id, 'publisher', $data['publisher']);
-    if (isset($data['bggUrl']))     update_post_meta($id, 'bgg_url', $data['bggUrl']);
-    if (isset($data['pubUrl']))     update_post_meta($id, 'pub_url', $data['pubUrl']);
-    if (isset($data['desc'])) foreach (['priprava','prubeh','konec'] as $k) { if (!empty($data['desc'][$k])) update_post_meta($id, 'desc_' . $k, $data['desc'][$k]); }
-
-    if ($cover) {
-        require_once ABSPATH . 'wp-admin/includes/media.php';
-        require_once ABSPATH . 'wp-admin/includes/file.php';
-        require_once ABSPATH . 'wp-admin/includes/image.php';
-        $att = media_sideload_image($cover, $id, null, 'id');
-        if (!is_wp_error($att)) set_post_thumbnail($id, $att);
-    }
-
-    wp_safe_redirect(admin_url('post.php?post=' . $id . '&action=edit&hd_imported=1'));
-    exit;
+    wp_send_json_success([
+        'name'          => $data['name'] ?? '',
+        'players_min'   => $data['minPlayers'] ?? '',
+        'players_max'   => $data['maxPlayers'] ?? '',
+        'time_min'      => $data['minTime'] ?? '',
+        'time_max'      => $data['maxTime'] ?? '',
+        'difficulty'    => isset($data['weight']) ? hd_import_diff($data['weight']) : '',
+        'year'          => $data['year'] ?? '',
+        'publisher'     => $data['publisher'] ?? '',
+        'image_url'     => $cover,
+        'bgg_url'       => $data['bggUrl'] ?? '',
+        'pub_url'       => $data['pubUrl'] ?? '',
+        'desc_priprava' => $data['desc']['priprava'] ?? '',
+        'desc_prubeh'   => $data['desc']['prubeh'] ?? '',
+        'desc_konec'    => $data['desc']['konec'] ?? '',
+        'source'        => $src,
+    ]);
 }
-add_action('admin_post_hd_import_paste', 'hd_handle_import_paste');
-
-/** Hláška v adminu po importu. */
-function hd_import_admin_notice() {
-    if (!empty($_GET['hd_imported'])) {
-        echo '<div class="notice notice-success is-dismissible"><p><strong>Hra byla naimportována.</strong> Zkontroluj údaje, případně doplň obálku/popis a klikni <em>Aktualizovat</em>.</p></div>';
-    }
-}
-add_action('admin_notices', 'hd_import_admin_notice');
+add_action('wp_ajax_hd_import_parse', 'hd_ajax_import_parse');

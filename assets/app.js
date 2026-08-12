@@ -120,11 +120,69 @@
     });
   }
 
-  /* ---------- IMPORT (zatím jen upozornění) ---------- */
+  /* ---------- FORMULÁŘ HRY (Nová hra / úprava) ---------- */
+  var gameModal = document.getElementById('hdGameModal');
+  var GF = { // mapa: klíč dat -> id pole
+    name: 'gfName', players_min: 'gfPmin', players_max: 'gfPmax', time_min: 'gfTmin',
+    time_max: 'gfTmax', difficulty: 'gfDiff', year: 'gfYear', publisher: 'gfPub',
+    image_url: 'gfImg', bgg_url: 'gfBgg', pub_url: 'gfPubUrl',
+    desc_priprava: 'gfDP', desc_prubeh: 'gfDPr', desc_konec: 'gfDK'
+  };
+  function gfEl(id) { return document.getElementById(id); }
+  function openGameForm() { if (gameModal) { gameModal.hidden = false; document.body.style.overflow = 'hidden'; } }
+  function closeGameForm() { if (gameModal) { gameModal.hidden = true; document.body.style.overflow = ''; } }
+  function resetGameForm() {
+    if (!gameModal) return;
+    Object.keys(GF).forEach(function (k) { var el = gfEl(GF[k]); if (el) { el.value = ''; el.classList.remove('imp-changed'); } });
+    var idEl = gfEl('gfId'); if (idEl) idEl.value = '';
+    var t = gfEl('gfTitle'); if (t) t.textContent = 'Nová hra';
+  }
+  function fillGameForm(data, highlight) {
+    resetGameForm();
+    Object.keys(GF).forEach(function (k) {
+      var el = gfEl(GF[k]);
+      if (!el) return;
+      var val = data[k] != null ? String(data[k]) : '';
+      el.value = val;
+      if (highlight && val && k.indexOf('desc_') !== 0) el.classList.add('imp-changed');
+    });
+  }
+
+  document.addEventListener('click', function (e) {
+    if (e.target.closest('.js-open-gameform')) { e.preventDefault(); resetGameForm(); openGameForm(); }
+    if (e.target.closest('.js-close-gameform')) { e.preventDefault(); closeGameForm(); }
+  });
+
+  /* ---------- IMPORT (načtení přes AJAX -> formulář) ---------- */
   var importModal = document.getElementById('hdImportModal');
   document.addEventListener('click', function (e) {
-    if (e.target.closest('.js-open-import') && importModal) { e.preventDefault(); importModal.hidden = false; }
-    if (e.target.closest('.js-close-import') && importModal) { e.preventDefault(); importModal.hidden = true; }
+    if (e.target.closest('.js-open-import') && importModal) { e.preventDefault(); importModal.hidden = false; document.body.style.overflow = 'hidden'; }
+    if (e.target.closest('.js-close-import') && importModal) { e.preventDefault(); importModal.hidden = true; document.body.style.overflow = ''; }
+
+    var parseBtn = e.target.closest('.js-import-parse');
+    if (parseBtn && typeof HD !== 'undefined') {
+      e.preventDefault();
+      var text = (gfEl('hdImportText') || {}).value || '';
+      var url = (gfEl('hdImportUrl') || {}).value || '';
+      if (!text.trim() && !url.trim()) { alert('Vlož obsah stránky (nebo aspoň odkaz na hru).'); return; }
+      var orig = parseBtn.textContent;
+      parseBtn.textContent = 'Načítám…'; parseBtn.disabled = true;
+      var body = new URLSearchParams();
+      body.set('action', 'hd_import_parse');
+      body.set('nonce', HD.parseNonce);
+      body.set('content', text);
+      body.set('url', url);
+      fetch(HD.ajax, { method: 'POST', body: body, credentials: 'same-origin' })
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+          parseBtn.textContent = orig; parseBtn.disabled = false;
+          if (!res || !res.success) { alert((res && res.data && res.data.msg) || 'Načtení se nepodařilo.'); return; }
+          fillGameForm(res.data, true);
+          if (importModal) importModal.hidden = true;
+          openGameForm();
+        })
+        .catch(function () { parseBtn.textContent = orig; parseBtn.disabled = false; alert('Chyba při načítání.'); });
+    }
   });
 
   /* ---------- EDITOR OBRÁZKU ---------- */

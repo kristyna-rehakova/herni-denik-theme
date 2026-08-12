@@ -104,3 +104,15 @@ function hd_handle_add_play() {
     exit;
 }
 add_action('admin_post_hd_add_play', 'hd_handle_add_play');
+
+/** Smazání hry z webu (do koše – vratné). */
+function hd_handle_delete_game() {
+    $id = intval($_GET['id'] ?? 0);
+    if (!$id || get_post_type($id) !== 'hra') wp_die('Neplatná hra.');
+    if (!current_user_can('delete_post', $id)) wp_die('Na smazání hry nemáš oprávnění.');
+    check_admin_referer('hd_delete_' . $id);
+    wp_trash_post($id);
+    wp_safe_redirect(add_query_arg('hd_del', 'ok', home_url('/')));
+    exit;
+}
+add_action('admin_post_hd_delete_game', 'hd_handle_delete_game');

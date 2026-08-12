@@ -24,6 +24,10 @@ $pubs = array_keys($pubs);
 sort($pubs, SORT_LOCALE_STRING);
 $total = $games->post_count;
 ?>
+<?php if (isset($_GET['hd_del']) && $_GET['hd_del'] === 'ok'): ?>
+  <div class="hd-flash ok">🗑️ Hra byla přesunuta do koše.</div>
+<?php endif; ?>
+
 <div class="page-head">
   <h1 class="page-title">🏠 Herna</h1>
   <?php if (current_user_can('edit_posts')): ?>

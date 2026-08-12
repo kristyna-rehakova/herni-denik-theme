@@ -4,7 +4,7 @@
  */
 if (!defined('ABSPATH')) exit;
 
-define('HD_VERSION', '0.3.1');
+define('HD_VERSION', '0.4.0');
 
 function hd_setup() {
     add_theme_support('title-tag');
@@ -23,6 +23,7 @@ require get_template_directory() . '/inc/helpers.php';
 require get_template_directory() . '/inc/cpt.php';
 require get_template_directory() . '/inc/meta.php';
 require get_template_directory() . '/inc/frontend.php';
+require get_template_directory() . '/inc/stats.php';
 if (is_admin()) require get_template_directory() . '/inc/import.php';
 
 /**

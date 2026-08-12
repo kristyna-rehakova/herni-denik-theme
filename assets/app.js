@@ -119,4 +119,14 @@
       });
     });
   }
+
+  /* ---------- POTVRZENÍ SMAZÁNÍ HRY ---------- */
+  document.addEventListener('click', function (e) {
+    var del = e.target.closest('.js-del-game');
+    if (!del) return;
+    var name = del.dataset.name || 'tuto hru';
+    if (!window.confirm('Opravdu smazat „' + name + '"? Přesune se do koše.')) {
+      e.preventDefault();
+    }
+  });
 })();

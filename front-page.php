@@ -31,8 +31,6 @@ $total = $games->post_count;
   <div class="hd-flash ok">🖼 Obrázek byl uložen.</div>
 <?php endif; ?>
 
-<h1 class="page-title">🏠 Herna</h1>
-
 <?php if (current_user_can('edit_posts')): ?>
   <div class="topbtns">
     <a class="btn big" href="<?php echo esc_url(admin_url('post-new.php?post_type=hra')); ?>">♟️ Přidat deskovku</a>
@@ -69,9 +67,9 @@ $total = $games->post_count;
 
   <div class="legend-row">
     <div class="legend">
-      <span class="item">🎲 = zapsat do Deníku</span>
-      <span class="item">✏️ = editovat info o hře</span>
-      <span class="item">🗑️ = smazat hru ze seznamu</span>
+      <span class="item"><span class="lico ic-play">🎲</span> = zapsat do Deníku</span>
+      <span class="item"><span class="lico ic-edit">✏️</span> = editovat info o hře</span>
+      <span class="item"><span class="lico ic-del">🗑️</span> = smazat hru ze seznamu</span>
     </div>
     <div class="rowtools">
       <label class="sortlbl">Řadit:
@@ -87,8 +85,6 @@ $total = $games->post_count;
       </span>
     </div>
   </div>
-
-  <p class="hd-resultcount"><span id="hdCount"><?php echo (int)$total; ?></span> her</p>
 
   <div class="grid" id="hdGrid">
     <?php while ($games->have_posts()): $games->the_post();

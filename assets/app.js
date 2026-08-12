@@ -407,6 +407,37 @@
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !playerModal.hidden) closePlayer(); });
   }
 
+  /* ---------- EDITACE SEKCÍ POPISU + VIDEO ---------- */
+  var descModal = document.getElementById('hdDescModal');
+  if (descModal) {
+    function openDesc(btn) {
+      gfEl('descGame').value = btn.dataset.game || '';
+      gfEl('descKey').value = btn.dataset.key || '';
+      gfEl('descTitle').textContent = 'Upravit: ' + (btn.dataset.title || 'sekce');
+      gfEl('descText').value = btn.dataset.text || '';
+      gfEl('descNote').value = btn.dataset.note || '';
+      descModal.hidden = false; document.body.style.overflow = 'hidden';
+    }
+    document.addEventListener('click', function (e) {
+      var b = e.target.closest('.js-edit-desc');
+      if (b) { e.preventDefault(); openDesc(b); return; }
+      if (e.target.closest('.js-close-desc')) { e.preventDefault(); descModal.hidden = true; document.body.style.overflow = ''; }
+    });
+  }
+  var videoModal = document.getElementById('hdVideoModal');
+  if (videoModal) {
+    document.addEventListener('click', function (e) {
+      var b = e.target.closest('.js-edit-video');
+      if (b) {
+        e.preventDefault();
+        gfEl('videoGame').value = b.dataset.game || '';
+        gfEl('videoUrl').value = b.dataset.yt || '';
+        videoModal.hidden = false; document.body.style.overflow = 'hidden';
+      }
+      if (e.target.closest('.js-close-video')) { e.preventDefault(); videoModal.hidden = true; document.body.style.overflow = ''; }
+    });
+  }
+
   /* ---------- FILTRY DENÍKU ---------- */
   var denik = document.getElementById('denikList');
   if (denik) {

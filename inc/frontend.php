@@ -218,6 +218,30 @@ function hd_handle_delete_play() {
 }
 add_action('admin_post_hd_delete_play', 'hd_handle_delete_play');
 
+/** Přeřazení partie v rámci dne (šipky ↑/↓). */
+function hd_handle_move_play() {
+    $id  = intval($_GET['id'] ?? 0);
+    $dir = (($_GET['dir'] ?? '') === 'up') ? 'up' : 'down';
+    if (!$id || get_post_type($id) !== 'partie') wp_die('Neplatná partie.');
+    if (!current_user_can('edit_post', $id)) wp_die('Nemáš oprávnění.');
+    check_admin_referer('hd_moveplay_' . $id);
+    $day = get_post_meta($id, 'play_date', true);
+    $ids = get_posts(['post_type' => 'partie', 'numberposts' => -1, 'meta_key' => 'play_date', 'meta_value' => $day, 'fields' => 'ids']);
+    usort($ids, function ($a, $b) {
+        $oa = (int) get_post_meta($a, 'ord', true); $ob = (int) get_post_meta($b, 'ord', true);
+        return $oa <=> $ob ?: $a <=> $b;
+    });
+    $idx = array_search($id, $ids, true);
+    $swap = ($dir === 'up') ? $idx - 1 : $idx + 1;
+    if ($idx !== false && $swap >= 0 && $swap < count($ids)) {
+        $tmp = $ids[$idx]; $ids[$idx] = $ids[$swap]; $ids[$swap] = $tmp;
+    }
+    foreach ($ids as $i => $pid) update_post_meta($pid, 'ord', $i);
+    wp_safe_redirect(get_post_type_archive_link('partie') . '#p' . $id);
+    exit;
+}
+add_action('admin_post_hd_move_play', 'hd_handle_move_play');
+
 /** Smazání hry z webu (do koše – vratné). */
 function hd_handle_delete_game() {
     $id = intval($_GET['id'] ?? 0);

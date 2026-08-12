@@ -23,6 +23,15 @@ if ($plays->have_posts()) {
     wp_reset_postdata();
 }
 krsort($by_day);
+// v rámci dne seřaď podle ručního pořadí (meta 'ord'), pak podle ID
+foreach ($by_day as $day => &$pids_ref) {
+    usort($pids_ref, function ($a, $b) {
+        $oa = (int) get_post_meta($a, 'ord', true);
+        $ob = (int) get_post_meta($b, 'ord', true);
+        return $oa <=> $ob ?: $a <=> $b;
+    });
+}
+unset($pids_ref);
 
 $all_players = hd_all_players();
 $all_games   = hd_all_games();
@@ -75,7 +84,7 @@ $all_games   = hd_all_games();
         $pnames = array_merge(array_map('hd_player_name', $players), $ext_players);
         $wnames = array_merge(array_map('hd_player_name', $winners), $ext_winners);
       ?>
-        <div class="play-row2"
+        <div class="play-row2" id="p<?php echo $pid; ?>"
              data-players="<?php echo esc_attr(implode(',', $players)); ?>"
              data-winners="<?php echo esc_attr(implode(',', $winners)); ?>"
              data-game="<?php echo (int)$gid; ?>"
@@ -99,6 +108,10 @@ $all_games   = hd_all_games();
             <div class="play-actions">
               <button type="button" class="icon-btn ic-edit js-edit-play" data-hd="<?php echo hd_play_edit_json($pid); ?>" title="Upravit">✏️</button>
               <a class="icon-btn ic-del js-del-play" href="<?php echo esc_url(wp_nonce_url(admin_url('admin-post.php?action=hd_delete_play&id=' . $pid), 'hd_delplay_' . $pid)); ?>" data-name="<?php echo esc_attr($gid ? get_the_title($gid) : 'partii'); ?>" title="Smazat">🗑️</a>
+            </div>
+            <div class="play-arrows">
+              <a href="<?php echo esc_url(wp_nonce_url(admin_url('admin-post.php?action=hd_move_play&dir=up&id=' . $pid), 'hd_moveplay_' . $pid)); ?>" title="Nahoru">↑</a>
+              <a href="<?php echo esc_url(wp_nonce_url(admin_url('admin-post.php?action=hd_move_play&dir=down&id=' . $pid), 'hd_moveplay_' . $pid)); ?>" title="Dolů">↓</a>
             </div>
           <?php endif; ?>
         </div>

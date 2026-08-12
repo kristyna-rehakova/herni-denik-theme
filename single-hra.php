@@ -18,12 +18,13 @@ $bgg = hd_meta($id, 'bgg_url');
 $purl = hd_meta($id, 'pub_url');
 $notes = hd_meta($id, 'notes');
 
-$sections = [
-    'Příprava'  => hd_meta($id, 'desc_priprava'),
-    'Průběh hry'=> hd_meta($id, 'desc_prubeh'),
-    'Konec hry' => hd_meta($id, 'desc_konec'),
-    'Bodování'  => hd_meta($id, 'desc_bodovani'),
+$parts = [
+    'priprava' => 'Příprava',
+    'prubeh'   => 'Průběh hry',
+    'konec'    => 'Konec hry',
+    'bodovani' => 'Bodování',
 ];
+$can = current_user_can('edit_post', $id);
 
 // partie k této hře
 $plays = new WP_Query([
@@ -63,40 +64,72 @@ $plays = new WP_Query([
       </div>
       <div class="links">
         <?php if ($bgg) echo '<a class="btn small" href="' . esc_url($bgg) . '" target="_blank" rel="noopener">Odkaz na Zatrolené</a>'; ?>
-        <?php if ($purl) echo '<a class="btn small" href="' . esc_url($purl) . '" target="_blank" rel="noopener">Odkaz na MINDOK</a>'; ?>
+        <?php if ($purl) echo '<a class="btn small" href="' . esc_url($purl) . '" target="_blank" rel="noopener">Odkaz na Mindok</a>'; ?>
       </div>
       <?php if ($notes) echo '<div class="notes">📝 ' . nl2br(esc_html($notes)) . '</div>'; ?>
       <?php if (is_user_logged_in()): ?>
         <p class="detail-actions">
-          <button type="button" class="btn js-open-play" data-game="<?php echo $id; ?>">🎲 Zapsat partii</button>
-          <?php if (current_user_can('edit_post', $id)): ?>
-            <button type="button" class="btn small ghost js-edit-game" data-hd="<?php echo hd_game_edit_json($id); ?>">✏️ Upravit info</button>
+          <button type="button" class="btn big js-open-play" data-game="<?php echo $id; ?>">🎲 Zapsat partii</button>
+          <?php if ($can): ?>
+            <button type="button" class="btn big ghost js-edit-game" data-hd="<?php echo hd_game_edit_json($id); ?>">✏️ Upravit info</button>
           <?php endif; ?>
         </p>
       <?php endif; ?>
     </div>
   </div>
 
-  <?php if (array_filter($sections)): ?>
-    <section class="desc">
+  <?php
+    // zobraz sekci Popis, pokud má editor práva (vidí i prázdné) nebo je aspoň jedna vyplněná
+    $has_any = false;
+    foreach ($parts as $k => $t) { if (hd_meta($id, 'desc_' . $k) || hd_meta($id, 'desc_' . $k . '_note')) { $has_any = true; break; } }
+  ?>
+  <?php if ($can || $has_any): ?>
+    <section class="game-section">
       <h2>📖 Popis hry</h2>
-      <?php foreach ($sections as $title => $body): if (!$body) continue; ?>
-        <div class="desc-part">
-          <h3><?php echo esc_html($title); ?></h3>
-          <div><?php echo nl2br(esc_html($body)); ?></div>
+      <?php foreach ($parts as $k => $title):
+        $text = hd_meta($id, 'desc_' . $k);
+        $note = hd_meta($id, 'desc_' . $k . '_note');
+        if (!$can && !$text && !$note) continue;
+      ?>
+        <div class="desc-part card" id="sekce-<?php echo esc_attr($k); ?>">
+          <div class="desc-head">
+            <h3><?php echo esc_html($title); ?></h3>
+            <?php if ($can): ?>
+              <button type="button" class="mini-edit js-edit-desc"
+                data-game="<?php echo $id; ?>" data-key="<?php echo esc_attr($k); ?>"
+                data-title="<?php echo esc_attr($title); ?>"
+                data-text="<?php echo esc_attr($text); ?>" data-note="<?php echo esc_attr($note); ?>"
+                title="Upravit sekci">✏️</button>
+            <?php endif; ?>
+          </div>
+          <?php if ($text): ?>
+            <div class="desc-text"><?php echo nl2br(esc_html($text)); ?></div>
+          <?php elseif ($can): ?>
+            <div class="desc-text muted">— zatím prázdné, klikni na ✏️ —</div>
+          <?php endif; ?>
+          <?php if ($note) echo '<div class="desc-note">💡 ' . nl2br(esc_html($note)) . '</div>'; ?>
         </div>
       <?php endforeach; ?>
     </section>
   <?php endif; ?>
 
-  <?php if ($yt): $yt_id = hd_youtube_id($yt); if ($yt_id): ?>
-    <section class="video">
-      <h2>🎬 Video</h2>
-      <div class="video-embed">
-        <iframe src="https://www.youtube.com/embed/<?php echo esc_attr($yt_id); ?>" title="YouTube" frameborder="0" allowfullscreen></iframe>
+  <?php $yt_id = hd_youtube_id($yt); if ($can || $yt_id): ?>
+    <section class="game-section">
+      <div class="sec-head">
+        <h2>🎬 Video</h2>
+        <?php if ($can): ?>
+          <button type="button" class="btn small ghost js-edit-video" data-game="<?php echo $id; ?>" data-yt="<?php echo esc_attr($yt); ?>">✏️ Upravit</button>
+        <?php endif; ?>
       </div>
+      <?php if ($yt_id): ?>
+        <div class="video-embed">
+          <iframe src="https://www.youtube.com/embed/<?php echo esc_attr($yt_id); ?>" title="YouTube" frameborder="0" allowfullscreen></iframe>
+        </div>
+      <?php elseif ($can): ?>
+        <p class="muted">Zatím bez videa. Klikni na „Upravit" a vlož odkaz na YouTube.</p>
+      <?php endif; ?>
     </section>
-  <?php endif; endif; ?>
+  <?php endif; ?>
 
   <?php if ($plays->have_posts()): ?>
     <section class="game-plays">

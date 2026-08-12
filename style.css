@@ -5,7 +5,7 @@ GitHub Theme URI: https://github.com/kristyna-rehakova/herni-denik-theme
 Update URI: https://github.com/kristyna-rehakova/herni-denik-theme
 Description: Skupinový deník deskových her — sbírka (Herna), odehrané hry (Deník), hráči. Vlastní typy obsahu + přihlášení a role přes WordPress. Nasazení přes GitHub Updater / WP Pusher.
 Author: Herní deník
-Version: 0.10.0
+Version: 0.11.0
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
@@ -242,8 +242,21 @@ main{max-width:1100px;margin:22px auto;padding:0 16px 60px}
 .detail .detail-info h1{font-size:1.7rem}
 .detail .links{display:flex;gap:8px;flex-wrap:wrap}
 .detail .notes{background:#fbf6e6;border-left:3px solid #f0c9a0;border-radius:6px;padding:8px 12px;font-size:.92rem}
-.detail .desc,.detail .video,.detail .game-plays{padding:0 18px 18px}
-.detail .desc h2,.detail .video h2,.detail .game-plays h2{margin:20px 0 12px}
+.detail .desc,.detail .video,.detail .game-plays,.detail .game-section{padding:0 18px 18px}
+.detail .desc h2,.detail .video h2,.detail .game-plays h2,.detail .game-section > h2{margin:20px 0 12px}
+.sec-head{display:flex;align-items:center;gap:12px;margin:20px 0 12px}
+.sec-head h2{margin:0}
+.desc-part.card{padding:14px 16px;margin-bottom:12px;background:var(--panel)}
+.desc-head{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.desc-head h3{flex:1;font-size:1.12rem;margin:0}
+.mini-edit{border:none;background:none;cursor:pointer;font-size:1rem;opacity:.55;padding:2px}
+.mini-edit:hover{opacity:1}
+.muted{color:var(--muted)}
+.detail-actions .btn.big{padding:15px 24px}
+/* šipky přeřazení v Deníku */
+.play-arrows{display:flex;flex-direction:column;gap:3px;flex:0 0 auto}
+.play-arrows a{width:30px;height:22px;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:7px;text-decoration:none;color:var(--muted);font-size:.95rem;background:#fff;line-height:1}
+.play-arrows a:hover{border-color:var(--accent);color:var(--wood-dark)}
 .desc-part div{white-space:pre-wrap;line-height:1.5}
 .video-embed{position:relative;max-width:720px;aspect-ratio:16/9}
 .video-embed iframe{position:absolute;inset:0;width:100%;height:100%;border-radius:12px}

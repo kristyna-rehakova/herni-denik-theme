@@ -4,7 +4,7 @@
  */
 if (!defined('ABSPATH')) exit;
 
-define('HD_VERSION', '0.11.0');
+define('HD_VERSION', '0.12.0');
 
 function hd_setup() {
     add_theme_support('title-tag');
@@ -28,6 +28,8 @@ require get_template_directory() . '/inc/import-paste.php';
 require get_template_directory() . '/inc/gameform.php';
 require get_template_directory() . '/inc/players.php';
 require get_template_directory() . '/inc/detail-edit.php';
+require get_template_directory() . '/inc/detail-media.php';
+require get_template_directory() . '/inc/expansions.php';
 if (is_admin()) require get_template_directory() . '/inc/import.php';
 
 /**

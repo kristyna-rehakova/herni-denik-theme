@@ -89,7 +89,10 @@ $plays = new WP_Query([
       <?php foreach ($parts as $k => $title):
         $text = hd_meta($id, 'desc_' . $k);
         $note = hd_meta($id, 'desc_' . $k . '_note');
-        if (!$can && !$text && !$note) continue;
+        $imgs = array_filter(array_map('intval', (array) hd_meta($id, 'desc_' . $k . '_images', [])));
+        if (!$can && !$text && !$note && !$imgs) continue;
+        $imgs_data = [];
+        foreach ($imgs as $a) { $u = wp_get_attachment_image_url($a, 'thumbnail'); if ($u) $imgs_data[] = ['id' => $a, 'url' => $u]; }
       ?>
         <div class="desc-part card" id="sekce-<?php echo esc_attr($k); ?>">
           <div class="desc-head">
@@ -99,6 +102,7 @@ $plays = new WP_Query([
                 data-game="<?php echo $id; ?>" data-key="<?php echo esc_attr($k); ?>"
                 data-title="<?php echo esc_attr($title); ?>"
                 data-text="<?php echo esc_attr($text); ?>" data-note="<?php echo esc_attr($note); ?>"
+                data-images="<?php echo esc_attr(wp_json_encode($imgs_data)); ?>"
                 title="Upravit sekci">✏️</button>
             <?php endif; ?>
           </div>
@@ -108,6 +112,11 @@ $plays = new WP_Query([
             <div class="desc-text muted">— zatím prázdné, klikni na ✏️ —</div>
           <?php endif; ?>
           <?php if ($note) echo '<div class="desc-note">💡 ' . nl2br(esc_html($note)) . '</div>'; ?>
+          <?php if ($imgs): ?>
+            <div class="desc-imgs">
+              <?php foreach ($imgs as $a) { $u = wp_get_attachment_image_url($a, 'large'); if ($u) echo '<a href="' . esc_url(wp_get_attachment_url($a)) . '" target="_blank" rel="noopener"><img src="' . esc_url($u) . '" alt="" loading="lazy"></a>'; } ?>
+            </div>
+          <?php endif; ?>
         </div>
       <?php endforeach; ?>
     </section>
@@ -130,6 +139,12 @@ $plays = new WP_Query([
       <?php endif; ?>
     </section>
   <?php endif; ?>
+
+  <?php
+    if (function_exists('hd_section_photos'))     hd_section_photos($id);
+    if (function_exists('hd_section_rules'))       hd_section_rules($id);
+    if (function_exists('hd_section_expansions'))  hd_section_expansions($id);
+  ?>
 
   <?php if ($plays->have_posts()): ?>
     <section class="game-plays">

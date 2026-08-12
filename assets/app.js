@@ -247,7 +247,11 @@
         .then(function (res) {
           parseBtn.textContent = orig; parseBtn.disabled = false;
           if (!res || !res.success) { alert((res && res.data && res.data.msg) || 'Načtení se nepodařilo.'); return; }
+          // pokud probíhá úprava existující hry (formulář je otevřený), zachovej ID
+          var editing = gameModal && !gameModal.hidden && gfEl('gfId') && gfEl('gfId').value;
+          var keepId = editing ? gfEl('gfId').value : '';
           fillGameForm(res.data, true);
+          if (keepId) { gfEl('gfId').value = keepId; var gt = gfEl('gfTitle'); if (gt) gt.textContent = 'Upravit hru'; }
           if (importModal) importModal.hidden = true;
           openGameForm();
         })
@@ -416,6 +420,18 @@
       gfEl('descTitle').textContent = 'Upravit: ' + (btn.dataset.title || 'sekce');
       gfEl('descText').value = btn.dataset.text || '';
       gfEl('descNote').value = btn.dataset.note || '';
+      var box = gfEl('descImages');
+      if (box) {
+        box.innerHTML = '';
+        var imgs = [];
+        try { imgs = JSON.parse(btn.dataset.images || '[]'); } catch (_) {}
+        imgs.forEach(function (im) {
+          var l = document.createElement('label');
+          l.className = 'desc-imgedit';
+          l.innerHTML = '<img src="' + im.url + '" alt=""><span><input type="checkbox" name="remove_images[]" value="' + im.id + '"> smazat</span>';
+          box.appendChild(l);
+        });
+      }
       descModal.hidden = false; document.body.style.overflow = 'hidden';
     }
     document.addEventListener('click', function (e) {
@@ -435,6 +451,63 @@
         videoModal.hidden = false; document.body.style.overflow = 'hidden';
       }
       if (e.target.closest('.js-close-video')) { e.preventDefault(); videoModal.hidden = true; document.body.style.overflow = ''; }
+    });
+  }
+
+  /* ---------- ROZŠÍŘENÍ (formulář + import) ---------- */
+  var expModal = document.getElementById('hdExpModal');
+  if (expModal) {
+    function resetExp(game) {
+      gfEl('expGame').value = game || ''; gfEl('expIdx').value = '-1';
+      gfEl('expName').value = ''; gfEl('expYear').value = ''; gfEl('expImg').value = ''; gfEl('expDesc').value = '';
+      var t = gfEl('expTitle'); if (t) t.textContent = 'Nové rozšíření';
+    }
+    function openExp() { expModal.hidden = false; document.body.style.overflow = 'hidden'; }
+    document.addEventListener('click', function (e) {
+      var o = e.target.closest('.js-open-exp');
+      if (o) { e.preventDefault(); resetExp(o.dataset.game); openExp(); return; }
+      if (e.target.closest('.js-close-exp')) { e.preventDefault(); expModal.hidden = true; document.body.style.overflow = ''; return; }
+      var ed = e.target.closest('.js-edit-exp');
+      if (ed) {
+        e.preventDefault();
+        try {
+          var d = JSON.parse(ed.dataset.hd || '{}');
+          gfEl('expGame').value = ed.dataset.game || ''; gfEl('expIdx').value = (d.idx != null ? d.idx : '-1');
+          gfEl('expName').value = d.name || ''; gfEl('expYear').value = d.year || ''; gfEl('expImg').value = ''; gfEl('expDesc').value = d.desc || '';
+          var t = gfEl('expTitle'); if (t) t.textContent = 'Upravit rozšíření';
+          openExp();
+        } catch (_) {}
+      }
+    });
+  }
+  var expImport = document.getElementById('hdExpImportModal');
+  if (expImport) {
+    document.addEventListener('click', function (e) {
+      if (e.target.closest('.js-open-expimport')) { e.preventDefault(); expImport.hidden = false; document.body.style.overflow = 'hidden'; return; }
+      if (e.target.closest('.js-close-expimport')) { e.preventDefault(); expImport.hidden = true; document.body.style.overflow = ''; return; }
+      var b = e.target.closest('.js-expimport-parse');
+      if (b && typeof HD !== 'undefined') {
+        e.preventDefault();
+        var text = (gfEl('expImpText') || {}).value || '', url = (gfEl('expImpUrl') || {}).value || '';
+        if (!text.trim() && !url.trim()) { alert('Vlož obsah stránky nebo odkaz.'); return; }
+        var orig = b.textContent; b.textContent = 'Načítám…'; b.disabled = true;
+        var body = new URLSearchParams();
+        body.set('action', 'hd_expansion_parse'); body.set('nonce', HD.parseNonce); body.set('content', text); body.set('url', url);
+        fetch(HD.ajax, { method: 'POST', body: body, credentials: 'same-origin' })
+          .then(function (r) { return r.json(); })
+          .then(function (res) {
+            b.textContent = orig; b.disabled = false;
+            if (!res || !res.success) { alert((res && res.data && res.data.msg) || 'Nepodařilo se.'); return; }
+            var gameBtn = document.querySelector('.js-open-exp');
+            gfEl('expGame').value = gameBtn ? gameBtn.dataset.game : ''; gfEl('expIdx').value = '-1';
+            gfEl('expName').value = res.data.name || ''; gfEl('expYear').value = res.data.year || '';
+            gfEl('expDesc').value = res.data.desc || ''; gfEl('expImg').value = res.data.image_url || '';
+            var t = gfEl('expTitle'); if (t) t.textContent = 'Nové rozšíření (z importu)';
+            expImport.hidden = true;
+            if (expModal) { expModal.hidden = false; document.body.style.overflow = 'hidden'; }
+          })
+          .catch(function () { b.textContent = orig; b.disabled = false; alert('Chyba při načítání.'); });
+      }
     });
   }
 

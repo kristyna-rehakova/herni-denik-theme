@@ -12,7 +12,10 @@ function hd_game_form_modal() {
       <div class="hd-modal-bg js-close-gameform"></div>
       <div class="hd-modal-card hd-modal-wide" role="dialog" aria-modal="true" aria-label="Hra">
         <button type="button" class="hd-modal-x js-close-gameform">×</button>
-        <h2 id="gfTitle">Nová hra</h2>
+        <div class="gf-titlerow">
+          <h2 id="gfTitle">Nová hra</h2>
+          <button type="button" class="btn small ghost js-open-import" title="Doplnit údaje vložením obsahu stránky">📋 Import</button>
+        </div>
         <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
           <input type="hidden" name="action" value="hd_save_game">
           <?php wp_nonce_field('hd_save_game', 'hd_game_nonce'); ?>

@@ -129,7 +129,7 @@ function hd_resolve_zatrolene_cover($url) {
 
 /* ---------------- modální okno importu (krok 1: vložení obsahu) ---------------- */
 function hd_import_modal() {
-    if (!current_user_can('edit_posts') || !is_front_page()) return;
+    if (!current_user_can('edit_posts') || !(is_front_page() || is_singular('hra'))) return;
     ?>
     <div class="hd-modal" id="hdImportModal" hidden>
       <div class="hd-modal-bg js-close-import"></div>

@@ -13,13 +13,17 @@ function hd_detail_modals() {
       <div class="hd-modal-card hd-modal-wide" role="dialog" aria-modal="true">
         <button type="button" class="hd-modal-x js-close-desc">×</button>
         <h2 id="descTitle">Upravit sekci</h2>
-        <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
+        <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" enctype="multipart/form-data">
           <input type="hidden" name="action" value="hd_save_desc">
           <?php wp_nonce_field('hd_save_desc', 'hd_desc_nonce'); ?>
           <input type="hidden" name="game_id" id="descGame">
           <input type="hidden" name="key" id="descKey">
           <label class="hd-fld">Text<textarea name="text" id="descText" rows="7"></textarea></label>
           <label class="hd-fld">Poznámka <span class="hd-hint">(nepovinné – tip, domácí pravidlo…)</span><textarea name="note" id="descNote" rows="2"></textarea></label>
+          <div class="hd-fld">Obrázky k sekci
+            <div id="descImages" class="desc-imgs-edit"></div>
+            <input type="file" name="images[]" accept="image/*" multiple>
+          </div>
           <div class="hd-modal-actions">
             <button type="button" class="btn back js-close-desc">Zrušit</button>
             <button type="submit" class="btn">Uložit</button>
@@ -59,6 +63,22 @@ function hd_handle_save_desc() {
     if (!in_array($key, ['priprava','prubeh','konec','bodovani'], true)) wp_die('Neplatná sekce.');
     update_post_meta($gid, 'desc_' . $key, sanitize_textarea_field(wp_unslash($_POST['text'] ?? '')));
     update_post_meta($gid, 'desc_' . $key . '_note', sanitize_textarea_field(wp_unslash($_POST['note'] ?? '')));
+
+    // obrázky sekce: odebrání + nahrání nových
+    $imgs = array_filter(array_map('intval', (array) get_post_meta($gid, 'desc_' . $key . '_images', true)));
+    $remove = array_map('intval', (array) ($_POST['remove_images'] ?? []));
+    if ($remove) {
+        foreach ($remove as $rid) { if (in_array($rid, $imgs, true)) wp_delete_attachment($rid, true); }
+        $imgs = array_values(array_diff($imgs, $remove));
+    }
+    if (!empty($_FILES['images']['name']) && is_array($_FILES['images']['name']) && function_exists('hd_upload_one')) {
+        for ($i = 0; $i < count($_FILES['images']['name']); $i++) {
+            $att = hd_upload_one('images', $i, $gid);
+            if ($att) $imgs[] = $att;
+        }
+    }
+    update_post_meta($gid, 'desc_' . $key . '_images', array_values(array_unique($imgs)));
+
     wp_safe_redirect(get_permalink($gid) . '#sekce-' . $key);
     exit;
 }

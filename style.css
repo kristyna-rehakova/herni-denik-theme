@@ -5,7 +5,7 @@ GitHub Theme URI: https://github.com/kristyna-rehakova/herni-denik-theme
 Update URI: https://github.com/kristyna-rehakova/herni-denik-theme
 Description: Skupinový deník deskových her — sbírka (Herna), odehrané hry (Deník), hráči. Vlastní typy obsahu + přihlášení a role přes WordPress. Nasazení přes GitHub Updater / WP Pusher.
 Author: Herní deník
-Version: 0.11.0
+Version: 0.12.0
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
@@ -257,6 +257,37 @@ main{max-width:1100px;margin:22px auto;padding:0 16px 60px}
 .play-arrows{display:flex;flex-direction:column;gap:3px;flex:0 0 auto}
 .play-arrows a{width:30px;height:22px;display:flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:7px;text-decoration:none;color:var(--muted);font-size:.95rem;background:#fff;line-height:1}
 .play-arrows a:hover{border-color:var(--accent);color:var(--wood-dark)}
+
+/* fotky */
+.photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px;margin-bottom:12px}
+.photo-item{position:relative;aspect-ratio:1/1;border-radius:10px;overflow:hidden;background:#e6ecd6}
+.photo-item img{width:100%;height:100%;object-fit:cover}
+.photo-del{position:absolute;top:4px;right:4px;width:24px;height:24px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:1rem}
+.upload-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:8px}
+.upload-row input[type=text],.upload-row input[type=url]{flex:1;min-width:140px;padding:8px 11px;border:1px solid var(--line);border-radius:10px;font-family:inherit}
+/* pravidla */
+.rules-list{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}
+.rule-item{display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid var(--line);border-radius:10px}
+.rule-item a:first-child{flex:1;text-decoration:none;color:var(--wood-dark);font-weight:600}
+.rule-del{text-decoration:none}
+.rules-add{display:flex;flex-direction:column;gap:8px}
+/* rozšíření */
+.exp-card{display:flex;gap:12px;padding:12px 14px;margin-bottom:10px;align-items:flex-start}
+.exp-thumb{width:64px;height:64px;flex:0 0 auto;border-radius:9px;overflow:hidden;background:#e6ecd6;display:flex;align-items:center;justify-content:center;font-size:1.6rem}
+.exp-thumb img{width:100%;height:100%;object-fit:cover}
+.exp-info{flex:1;min-width:0}
+.exp-desc{white-space:pre-wrap;line-height:1.45;font-size:.9rem;margin-top:4px;color:#5b6250}
+.exp-tools{display:flex;gap:6px;flex:0 0 auto}
+/* obrázky v sekcích popisu */
+.desc-imgs{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.desc-imgs img{max-width:170px;max-height:170px;border-radius:8px;border:1px solid var(--line)}
+.desc-imgs-edit{display:flex;flex-wrap:wrap;gap:10px;margin:6px 0}
+.desc-imgedit{display:inline-flex;flex-direction:column;gap:3px;font-size:.75rem;color:var(--muted);align-items:center}
+.desc-imgedit img{width:80px;height:80px;object-fit:cover;border-radius:8px;border:1px solid var(--line)}
+/* import uvnitř okna hry + řazení oken */
+.gf-titlerow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px}
+.gf-titlerow h2{margin:0}
+#hdImportModal,#hdExpImportModal{z-index:200}
 .desc-part div{white-space:pre-wrap;line-height:1.5}
 .video-embed{position:relative;max-width:720px;aspect-ratio:16/9}
 .video-embed iframe{position:absolute;inset:0;width:100%;height:100%;border-radius:12px}

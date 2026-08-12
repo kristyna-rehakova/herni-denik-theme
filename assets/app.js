@@ -90,9 +90,46 @@
   var modal = document.getElementById('hdPlayModal');
   if (modal) {
     var gameSel = document.getElementById('hdPlayGame');
+    var playId = document.getElementById('hdPlayId');
+    var playTitle = document.getElementById('hdPlayTitle');
+    var dateInput = modal.querySelector('input[name="play_date"]');
+    var noteInput = modal.querySelector('textarea[name="note"]');
+    var defaultDate = dateInput ? dateInput.value : '';
 
+    function setWon(row) {
+      var p = row.querySelector('.js-played'), w = row.querySelector('.js-won');
+      if (p && w) { w.disabled = !p.checked; if (!p.checked) w.checked = false; }
+    }
+    function resetPlay() {
+      if (playId) playId.value = '';
+      if (gameSel) gameSel.value = '';
+      if (dateInput) dateInput.value = defaultDate;
+      if (noteInput) noteInput.value = '';
+      modal.querySelectorAll('.js-played').forEach(function (c) { c.checked = false; });
+      modal.querySelectorAll('.js-won').forEach(function (c) { c.checked = false; c.disabled = true; });
+      if (playTitle) playTitle.textContent = '🎲 Zapsat partii';
+    }
     function openModal(gameId) {
+      resetPlay();
       if (gameId && gameSel) gameSel.value = gameId;
+      modal.hidden = false;
+      document.body.style.overflow = 'hidden';
+    }
+    function editPlay(data) {
+      resetPlay();
+      if (playId) playId.value = data.id || '';
+      if (gameSel) gameSel.value = data.game || '';
+      if (dateInput && data.play_date) dateInput.value = data.play_date;
+      if (noteInput) noteInput.value = data.note || '';
+      var players = (data.players || []).map(String), winners = (data.winners || []).map(String);
+      modal.querySelectorAll('.hd-prow').forEach(function (row) {
+        var p = row.querySelector('.js-played'), w = row.querySelector('.js-won');
+        if (p && players.indexOf(p.value) > -1) {
+          p.checked = true;
+          if (w) { w.disabled = false; if (winners.indexOf(w.value) > -1) w.checked = true; }
+        }
+      });
+      if (playTitle) playTitle.textContent = '✏️ Upravit partii';
       modal.hidden = false;
       document.body.style.overflow = 'hidden';
     }
@@ -104,6 +141,8 @@
     document.addEventListener('click', function (e) {
       var opener = e.target.closest('.js-open-play');
       if (opener) { e.preventDefault(); openModal(opener.dataset.game || ''); return; }
+      var ed = e.target.closest('.js-edit-play');
+      if (ed) { e.preventDefault(); try { editPlay(JSON.parse(ed.dataset.hd || '{}')); } catch (_) {} return; }
       if (e.target.closest('.js-close-play')) { e.preventDefault(); closeModal(); }
     });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !modal.hidden) closeModal(); });
@@ -111,12 +150,7 @@
     // vítěze lze zaškrtnout jen u toho, kdo hrál
     modal.querySelectorAll('.hd-prow').forEach(function (row) {
       var played = row.querySelector('.js-played');
-      var won = row.querySelector('.js-won');
-      if (!played || !won) return;
-      played.addEventListener('change', function () {
-        won.disabled = !played.checked;
-        if (!played.checked) won.checked = false;
-      });
+      if (played) played.addEventListener('change', function () { setWon(row); });
     });
   }
 
@@ -139,6 +173,8 @@
   }
   function fillGameForm(data, highlight) {
     resetGameForm();
+    var idEl = gfEl('gfId'); if (idEl) idEl.value = data.id || '';
+    var t = gfEl('gfTitle'); if (t) t.textContent = data.id ? 'Upravit hru' : 'Nová hra';
     Object.keys(GF).forEach(function (k) {
       var el = gfEl(GF[k]);
       if (!el) return;
@@ -151,6 +187,11 @@
   document.addEventListener('click', function (e) {
     if (e.target.closest('.js-open-gameform')) { e.preventDefault(); resetGameForm(); openGameForm(); }
     if (e.target.closest('.js-close-gameform')) { e.preventDefault(); closeGameForm(); }
+    var editBtn = e.target.closest('.js-edit-game');
+    if (editBtn) {
+      e.preventDefault();
+      try { fillGameForm(JSON.parse(editBtn.dataset.hd || '{}'), false); openGameForm(); } catch (_) {}
+    }
   });
 
   /* ---------- IMPORT (načtení přes AJAX -> formulář) ---------- */

@@ -43,7 +43,7 @@ $t_for_filter = hd_meta($id, 'time_max') ?: hd_meta($id, 'time_min');
       <div class="card-actions">
         <button type="button" class="icon-btn ic-play js-open-play" data-game="<?php echo $id; ?>" title="Zapsat do Deníku">🎲</button>
         <?php if (current_user_can('edit_post', $id)): ?>
-          <a class="icon-btn ic-edit" href="<?php echo esc_url(get_edit_post_link($id)); ?>" title="Editovat info o hře">✏️</a>
+          <button type="button" class="icon-btn ic-edit js-edit-game" data-hd="<?php echo hd_game_edit_json($id); ?>" title="Editovat info o hře">✏️</button>
         <?php endif; ?>
         <?php if (current_user_can('delete_post', $id)): ?>
           <a class="icon-btn ic-del js-del-game" href="<?php echo esc_url(wp_nonce_url(admin_url('admin-post.php?action=hd_delete_game&id=' . $id), 'hd_delete_' . $id)); ?>" data-name="<?php echo esc_attr(get_the_title()); ?>" title="Smazat hru ze seznamu">🗑️</a>

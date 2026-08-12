@@ -101,6 +101,41 @@ function hd_cover_data($id) {
         $id, esc_attr($url), esc_attr($x), esc_attr($y), esc_attr($zoom), esc_attr($size));
 }
 
+/** JSON s údaji hry pro předvyplnění front-end formuláře (atribut data-hd). */
+function hd_game_edit_json($id) {
+    $d = [
+        'id'            => $id,
+        'name'          => get_the_title($id),
+        'players_min'   => hd_meta($id, 'players_min'),
+        'players_max'   => hd_meta($id, 'players_max'),
+        'time_min'      => hd_meta($id, 'time_min'),
+        'time_max'      => hd_meta($id, 'time_max'),
+        'difficulty'    => hd_meta($id, 'difficulty'),
+        'year'          => hd_meta($id, 'year'),
+        'publisher'     => hd_meta($id, 'publisher'),
+        'bgg_url'       => hd_meta($id, 'bgg_url'),
+        'pub_url'       => hd_meta($id, 'pub_url'),
+        'notes'         => hd_meta($id, 'notes'),
+        'desc_priprava' => hd_meta($id, 'desc_priprava'),
+        'desc_prubeh'   => hd_meta($id, 'desc_prubeh'),
+        'desc_konec'    => hd_meta($id, 'desc_konec'),
+    ];
+    return esc_attr(wp_json_encode($d));
+}
+
+/** JSON s údaji partie pro předvyplnění okna „Zapsat partii". */
+function hd_play_edit_json($pid) {
+    $d = [
+        'id'        => $pid,
+        'game'      => (int) hd_meta($pid, 'game'),
+        'play_date' => hd_meta($pid, 'play_date'),
+        'players'   => array_map('intval', (array) hd_meta($pid, 'players', [])),
+        'winners'   => array_map('intval', (array) hd_meta($pid, 'winners', [])),
+        'note'      => hd_meta($pid, 'note'),
+    ];
+    return esc_attr(wp_json_encode($d));
+}
+
 /** Počet odehraných partií dané hry. */
 function hd_play_count($game_id) {
     $q = new WP_Query([

@@ -70,7 +70,7 @@ $plays = new WP_Query([
         <p class="detail-actions">
           <button type="button" class="btn js-open-play" data-game="<?php echo $id; ?>">🎲 Zapsat partii</button>
           <?php if (current_user_can('edit_post', $id)): ?>
-            <a class="btn small ghost" href="<?php echo esc_url(get_edit_post_link($id)); ?>">✏️ Upravit info</a>
+            <button type="button" class="btn small ghost js-edit-game" data-hd="<?php echo hd_game_edit_json($id); ?>">✏️ Upravit info</button>
           <?php endif; ?>
         </p>
       <?php endif; ?>

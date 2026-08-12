@@ -68,7 +68,7 @@ krsort($by_day);
                 } ?>
               </div>
               <?php if ($note) echo '<div class="pnote">📝 ' . nl2br(esc_html($note)) . '</div>'; ?>
-              <?php if (current_user_can('edit_post', $pid)) echo '<a class="edit-link" href="' . esc_url(get_edit_post_link($pid)) . '">✏️</a>'; ?>
+              <?php if (current_user_can('edit_post', $pid)) echo '<button type="button" class="edit-link js-edit-play" data-hd="' . hd_play_edit_json($pid) . '">✏️</button>'; ?>
             </div>
         </div>
       <?php endforeach; ?>

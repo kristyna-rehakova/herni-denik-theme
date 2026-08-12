@@ -6,7 +6,12 @@
 if (!defined('ABSPATH')) exit;
 
 /* ---------------- detekce zdroje ---------------- */
-function hd_detect_source($text) {
+function hd_detect_source($text, $url = '') {
+    // Nejspolehlivější je odkaz
+    if ($url) {
+        if (stripos($url, 'mindok') !== false) return 'mindok';
+        if (stripos($url, 'zatrolene') !== false) return 'zatrolene';
+    }
     $zat = preg_match('/Zatrolené hry|hodnoceno\s+\d+\s*x|Seznam vlastníků/iu', $text);
     $mindok = preg_match('/Doba hraní:|Náročnost:|Přidat na seznam přání|DOKŮ/iu', $text);
     return ($mindok && !$zat) ? 'mindok' : 'zatrolene';
@@ -86,19 +91,25 @@ function hd_parse_zatrolene($text, $url) {
 function hd_parse_mindok($text) {
     $lines = array_map('trim', explode("\n", preg_replace('/\r/', '', $text)));
     $out = ['publisher' => 'MINDOK'];
+    // hodnotu bere buď inline za popiskem (na stejném řádku), nebo z dalšího řádku
     $valAfter = function ($labelRe) use ($lines) {
-        $i = -1; foreach ($lines as $k => $l) { if (preg_match($labelRe, $l)) { $i = $k; break; } }
-        if ($i < 0) return null;
-        for ($j = $i + 1; $j < count($lines) && $j <= $i + 3; $j++) { if ($lines[$j] !== '') return $lines[$j]; }
+        foreach ($lines as $k => $l) {
+            if (preg_match($labelRe, $l)) {
+                $after = trim(preg_replace($labelRe, '', $l, 1));
+                if ($after !== '') return $after;
+                for ($j = $k + 1; $j < count($lines) && $j <= $k + 3; $j++) { if (trim($lines[$j]) !== '') return trim($lines[$j]); }
+                return null;
+            }
+        }
         return null;
     };
     $iWish = -1; foreach ($lines as $k => $l) { if (preg_match('/^Přidat na seznam přání/iu', $l)) { $iWish = $k; break; } }
     $BADGE = '/^(Vyrobeno|Novink|Bestseller|Výprodej|Akce\b|Sleva|Doprava|V prodeji|Poslední|Skladem|Předprodej|Výhodně|Oceněn|Cena )/iu';
     if ($iWish > 0) { for ($j = $iWish - 1; $j >= 0; $j--) { $l = $lines[$j]; if ($l !== '' && !preg_match($BADGE, $l)) { $out['name'] = $l; break; } } }
-    $pv = $valAfter('/^Počet hráčů:?$/iu'); if ($pv) { if (preg_match('/(\d+)\s*[–—-]\s*(\d+)/u', $pv, $m)) { $out['minPlayers'] = (int)$m[1]; $out['maxPlayers'] = (int)$m[2]; } elseif (preg_match('/(\d+)/', $pv, $s)) { $out['minPlayers'] = (int)$s[1]; $out['maxPlayers'] = (int)$s[1]; } }
-    $tv = $valAfter('/^(Doba hraní|Hrací doba|Herní doba):?$/iu'); if ($tv) { if (preg_match('/(\d+)\s*(?:[–—-]\s*(\d+))?/u', $tv, $m)) { $out['minTime'] = (int)$m[1]; $out['maxTime'] = !empty($m[2]) ? (int)$m[2] : (int)$m[1]; } }
-    $dv = $valAfter('/^(Náročnost|Obtížnost):?$/iu'); if ($dv) { $s = mb_strtolower($dv); $w = null; if (preg_match('/snadn|lehk/u', $s)) $w = 1.5; elseif (preg_match('/st[řr]edn/u', $s)) $w = 3; elseif (preg_match('/t[ěe][žz]k|n[áa]ro[čc]/u', $s)) $w = 4; if ($w) $out['weight'] = $w; }
-    $rv = $valAfter('/^Rok vydání:?$/iu'); if ($rv) { if (preg_match('/(\d{4})/', $rv, $m)) $out['year'] = (int)$m[1]; }
+    $pv = $valAfter('/^Počet hráčů:?\s*/iu'); if ($pv) { if (preg_match('/(\d+)\s*[–—-]\s*(\d+)/u', $pv, $m)) { $out['minPlayers'] = (int)$m[1]; $out['maxPlayers'] = (int)$m[2]; } elseif (preg_match('/(\d+)/', $pv, $s)) { $out['minPlayers'] = (int)$s[1]; $out['maxPlayers'] = (int)$s[1]; } }
+    $tv = $valAfter('/^(Doba hraní|Hrací doba|Herní doba):?\s*/iu'); if ($tv) { if (preg_match('/(\d+)\s*(?:[–—-]\s*(\d+))?/u', $tv, $m)) { $out['minTime'] = (int)$m[1]; $out['maxTime'] = !empty($m[2]) ? (int)$m[2] : (int)$m[1]; } }
+    $dv = $valAfter('/^(Náročnost|Obtížnost):?\s*/iu'); if ($dv) { $s = mb_strtolower($dv); $w = null; if (preg_match('/snadn|lehk/u', $s)) $w = 1.5; elseif (preg_match('/st[řr]edn/u', $s)) $w = 3; elseif (preg_match('/t[ěe][žz]k|n[áa]ro[čc]/u', $s)) $w = 4; if ($w) $out['weight'] = $w; }
+    $rv = $valAfter('/^Rok vydání:?\s*/iu'); if ($rv) { if (preg_match('/(\d{4})/', $rv, $m)) $out['year'] = (int)$m[1]; }
     return $out;
 }
 
@@ -158,7 +169,7 @@ function hd_ajax_import_parse() {
     $url  = trim(wp_unslash($_POST['url'] ?? ''));
     if (trim($text) === '' && $url === '') wp_send_json_error(['msg' => 'Vlož obsah stránky nebo aspoň odkaz na hru.']);
 
-    $src = hd_detect_source($text);
+    $src = hd_detect_source($text, $url);
     $data = ($src === 'mindok') ? hd_parse_mindok($text) : hd_parse_zatrolene($text, $url);
     if ($src === 'mindok' && $url) $data['pubUrl'] = $url;
     $cover = ($src !== 'mindok' && $url) ? hd_resolve_zatrolene_cover($url) : '';

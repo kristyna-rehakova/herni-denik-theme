@@ -32,9 +32,10 @@ function hd_play_modal() {
       <div class="hd-modal-bg js-close-play"></div>
       <div class="hd-modal-card" role="dialog" aria-modal="true" aria-label="Zapsat partii">
         <button type="button" class="hd-modal-x js-close-play" aria-label="Zavřít">×</button>
-        <h2>🎲 Zapsat partii</h2>
+        <h2 id="hdPlayTitle">🎲 Zapsat partii</h2>
         <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
           <input type="hidden" name="action" value="hd_add_play">
+          <input type="hidden" name="play_id" id="hdPlayId" value="">
           <?php wp_nonce_field('hd_add_play', 'hd_play_nonce'); ?>
           <label class="hd-fld">Hra
             <select name="game" id="hdPlayGame" required>
@@ -165,13 +166,20 @@ function hd_handle_add_play() {
     $note    = wp_kses_post(wp_unslash($_POST['note'] ?? ''));
 
     $title = trim(get_the_title($gid) . ' ' . $date);
-    $id = wp_insert_post([
-        'post_type'   => 'partie',
-        'post_status' => 'publish',
-        'post_title'  => $title,
-        'post_author' => get_current_user_id(),
-    ]);
-    if (is_wp_error($id)) { wp_safe_redirect(add_query_arg('hd_play', 'err', $back)); exit; }
+    $pid = intval($_POST['play_id'] ?? 0);
+    if ($pid && get_post_type($pid) === 'partie') {
+        if (!current_user_can('edit_post', $pid)) wp_die('Na úpravu partie nemáš oprávnění.');
+        $id = $pid;
+        wp_update_post(['ID' => $id, 'post_title' => $title]);
+    } else {
+        $id = wp_insert_post([
+            'post_type'   => 'partie',
+            'post_status' => 'publish',
+            'post_title'  => $title,
+            'post_author' => get_current_user_id(),
+        ]);
+        if (is_wp_error($id)) { wp_safe_redirect(add_query_arg('hd_play', 'err', $back)); exit; }
+    }
 
     update_post_meta($id, 'game', $gid);
     update_post_meta($id, 'play_date', $date);

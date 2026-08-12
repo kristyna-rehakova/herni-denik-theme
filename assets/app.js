@@ -96,9 +96,25 @@
     var noteInput = modal.querySelector('textarea[name="note"]');
     var defaultDate = dateInput ? dateInput.value : '';
 
+    var extList = document.getElementById('hdExtList');
+    var extName = document.getElementById('hdExtName');
+
     function setWon(row) {
       var p = row.querySelector('.js-played'), w = row.querySelector('.js-won');
       if (p && w) { w.disabled = !p.checked; if (!p.checked) w.checked = false; }
+    }
+    function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+    function addExtRow(name, isWinner) {
+      if (!extList || !name) return;
+      var init = name.trim().charAt(0).toUpperCase() || '?';
+      var row = document.createElement('div');
+      row.className = 'hd-prow ext';
+      row.innerHTML =
+        '<span class="hd-pchk"><input type="hidden" name="ext_players[]" value="' + esc(name) + '">' +
+        '<span class="avatar ext-av" style="width:24px;height:24px;font-size:11px">' + esc(init) + '</span> ' + esc(name) + ' <span class="ext-tag">host</span></span>' +
+        '<label class="hd-wchk" title="Vyhrál"><input type="checkbox" class="js-won-ext" name="ext_winners[]" value="' + esc(name) + '"' + (isWinner ? ' checked' : '') + '> 🏆</label>' +
+        '<button type="button" class="js-rm-ext" title="Odebrat">×</button>';
+      extList.appendChild(row);
     }
     function resetPlay() {
       if (playId) playId.value = '';
@@ -107,6 +123,8 @@
       if (noteInput) noteInput.value = '';
       modal.querySelectorAll('.js-played').forEach(function (c) { c.checked = false; });
       modal.querySelectorAll('.js-won').forEach(function (c) { c.checked = false; c.disabled = true; });
+      if (extList) extList.innerHTML = '';
+      if (extName) extName.value = '';
       if (playTitle) playTitle.textContent = '🎲 Zapsat partii';
     }
     function openModal(gameId) {
@@ -122,13 +140,15 @@
       if (dateInput && data.play_date) dateInput.value = data.play_date;
       if (noteInput) noteInput.value = data.note || '';
       var players = (data.players || []).map(String), winners = (data.winners || []).map(String);
-      modal.querySelectorAll('.hd-prow').forEach(function (row) {
+      modal.querySelectorAll('.hd-prow:not(.ext)').forEach(function (row) {
         var p = row.querySelector('.js-played'), w = row.querySelector('.js-won');
         if (p && players.indexOf(p.value) > -1) {
           p.checked = true;
           if (w) { w.disabled = false; if (winners.indexOf(w.value) > -1) w.checked = true; }
         }
       });
+      var extP = data.ext_players || [], extW = (data.ext_winners || []).map(String);
+      extP.forEach(function (n) { addExtRow(n, extW.indexOf(String(n)) > -1); });
       if (playTitle) playTitle.textContent = '✏️ Upravit partii';
       modal.hidden = false;
       document.body.style.overflow = 'hidden';
@@ -143,8 +163,17 @@
       if (opener) { e.preventDefault(); openModal(opener.dataset.game || ''); return; }
       var ed = e.target.closest('.js-edit-play');
       if (ed) { e.preventDefault(); try { editPlay(JSON.parse(ed.dataset.hd || '{}')); } catch (_) {} return; }
+      if (e.target.closest('.js-add-ext')) {
+        e.preventDefault();
+        var n = extName ? extName.value.trim() : '';
+        if (n) { addExtRow(n, false); extName.value = ''; extName.focus(); }
+        return;
+      }
+      var rm = e.target.closest('.js-rm-ext');
+      if (rm) { e.preventDefault(); var r = rm.closest('.hd-prow'); if (r) r.remove(); return; }
       if (e.target.closest('.js-close-play')) { e.preventDefault(); closeModal(); }
     });
+    if (extName) extName.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); var n = extName.value.trim(); if (n) { addExtRow(n, false); extName.value = ''; } } });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !modal.hidden) closeModal(); });
 
     // vítěze lze zaškrtnout jen u toho, kdo hrál
@@ -337,13 +366,57 @@
     });
   }
 
-  /* ---------- POTVRZENÍ SMAZÁNÍ HRY ---------- */
+  /* ---------- FORMULÁŘ HRÁČE ---------- */
+  var playerModal = document.getElementById('hdPlayerModal');
+  if (playerModal) {
+    var pfId = gfEl('pfId'), pfNick = gfEl('pfNick'), pfName = gfEl('pfName'),
+        pfColor = gfEl('pfColor'), pfEmoji = gfEl('pfEmoji'), pfAvatar = gfEl('pfAvatar'), pfTitle = gfEl('pfTitle');
+    function pv() {
+      if (!pfAvatar) return;
+      var label = (pfNick.value.trim() || pfName.value.trim() || '?');
+      pfAvatar.style.background = pfColor.value || '#eeb088';
+      pfAvatar.textContent = pfEmoji.value.trim() || label.charAt(0).toUpperCase() || '?';
+    }
+    function resetPlayer() {
+      pfId.value = ''; pfNick.value = ''; pfName.value = ''; pfColor.value = '#eeb088'; pfEmoji.value = '';
+      if (pfTitle) pfTitle.textContent = 'Nový hráč'; pv();
+    }
+    function openPlayer() { playerModal.hidden = false; document.body.style.overflow = 'hidden'; }
+    function closePlayer() { playerModal.hidden = true; document.body.style.overflow = ''; }
+    [pfNick, pfName, pfColor, pfEmoji].forEach(function (el) { if (el) el.addEventListener('input', pv); });
+
+    document.addEventListener('click', function (e) {
+      if (e.target.closest('.js-open-player')) { e.preventDefault(); resetPlayer(); openPlayer(); return; }
+      if (e.target.closest('.js-close-player')) { e.preventDefault(); closePlayer(); return; }
+      var ed = e.target.closest('.js-edit-player');
+      if (ed) {
+        e.preventDefault();
+        try {
+          var d = JSON.parse(ed.dataset.hd || '{}');
+          pfId.value = d.id || ''; pfNick.value = d.nick || ''; pfName.value = d.name || '';
+          pfColor.value = d.color || '#eeb088'; pfEmoji.value = d.emoji || '';
+          if (pfTitle) pfTitle.textContent = 'Upravit hráče'; pv(); openPlayer();
+        } catch (_) {}
+        return;
+      }
+      var sw = e.target.closest('.js-swatch');
+      if (sw) { e.preventDefault(); pfColor.value = sw.dataset.c; pv(); return; }
+      var em = e.target.closest('.js-emoji');
+      if (em) { e.preventDefault(); pfEmoji.value = em.dataset.e || ''; pv(); return; }
+    });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !playerModal.hidden) closePlayer(); });
+  }
+
+  /* ---------- POTVRZENÍ SMAZÁNÍ (hra i hráč) ---------- */
   document.addEventListener('click', function (e) {
     var del = e.target.closest('.js-del-game');
-    if (!del) return;
-    var name = del.dataset.name || 'tuto hru';
-    if (!window.confirm('Opravdu smazat „' + name + '"? Přesune se do koše.')) {
-      e.preventDefault();
+    if (del) {
+      if (!window.confirm('Opravdu smazat „' + (del.dataset.name || 'tuto hru') + '"? Přesune se do koše.')) e.preventDefault();
+      return;
+    }
+    var delP = e.target.closest('.js-del-player');
+    if (delP) {
+      if (!window.confirm('Opravdu smazat hráče „' + (delP.dataset.name || '') + '"? Přesune se do koše.')) e.preventDefault();
     }
   });
 })();

@@ -105,12 +105,15 @@ $plays = new WP_Query([
         $pid = get_the_ID();
         $players = (array) hd_meta($pid, 'players', []);
         $winners = (array) hd_meta($pid, 'winners', []);
+        $ext_players = (array) hd_meta($pid, 'ext_players', []);
+        $ext_winners = (array) hd_meta($pid, 'ext_winners', []);
         $pdate = hd_meta($pid, 'play_date');
       ?>
         <div class="play-row">
           <span class="pdate"><?php echo esc_html(hd_format_date($pdate)); ?></span>
           <span class="pplayers">
             <?php foreach ($players as $hp) { echo hd_player_avatar($hp, 26); if (in_array((string)$hp, array_map('strval',$winners), true)) echo '🏆'; } ?>
+            <?php foreach ($ext_players as $en) { echo hd_ext_avatar($en, 26); if (in_array($en, $ext_winners, true)) echo '🏆'; } ?>
           </span>
         </div>
       <?php endwhile; wp_reset_postdata(); ?>

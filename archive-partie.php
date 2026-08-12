@@ -35,8 +35,8 @@ krsort($by_day);
 
 <h1 class="page-title">📖 Deník</h1>
 
-<?php if (current_user_can('edit_posts')): ?>
-  <p><a class="btn big" href="<?php echo esc_url(admin_url('post-new.php?post_type=partie')); ?>">🎲 Zapsat do Deníku</a></p>
+<?php if (is_user_logged_in()): ?>
+  <p><button type="button" class="btn big js-open-play">🎲 Zapsat do Deníku</button></p>
 <?php endif; ?>
 
 <?php if ($by_day): ?>
@@ -61,10 +61,18 @@ krsort($by_day);
             <div class="play-body">
               <span class="play-name">(smazaná hra)</span>
           <?php endif; ?>
+              <?php
+                $ext_players = (array) hd_meta($pid, 'ext_players', []);
+                $ext_winners = (array) hd_meta($pid, 'ext_winners', []);
+              ?>
               <div class="pplayers">
                 <?php foreach ($players as $hp) {
                     $win = in_array((string)$hp, array_map('strval', $winners), true);
                     echo '<span class="pl-wrap' . ($win ? ' win' : '') . '" title="' . esc_attr(hd_player_name($hp)) . ($win ? ' 🏆' : '') . '">' . hd_player_avatar($hp, 28) . ($win ? ' 🏆' : '') . '</span>';
+                }
+                foreach ($ext_players as $en) {
+                    $win = in_array($en, $ext_winners, true);
+                    echo '<span class="pl-wrap' . ($win ? ' win' : '') . '" title="' . esc_attr($en) . ' (host)' . ($win ? ' 🏆' : '') . '">' . hd_ext_avatar($en, 28) . ($win ? ' 🏆' : '') . '</span>';
                 } ?>
               </div>
               <?php if ($note) echo '<div class="pnote">📝 ' . nl2br(esc_html($note)) . '</div>'; ?>

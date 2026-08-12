@@ -6,7 +6,8 @@ if (!defined('ABSPATH')) exit;
 
 /** Načti skript + předej data jen tam, kde je potřeba (Herna, detail hry, Deník). */
 function hd_front_assets() {
-    if (is_front_page() || is_singular('hra') || is_post_type_archive('partie')) {
+    $hraci = (int) get_option('hd_hraci_page_id');
+    if (is_front_page() || is_singular('hra') || is_post_type_archive('partie') || ($hraci && is_page($hraci))) {
         wp_enqueue_script('hd-app', get_template_directory_uri() . '/assets/app.js', [], HD_VERSION, true);
         wp_localize_script('hd-app', 'HD', [
             'ajax'       => admin_url('admin-ajax.php'),
@@ -58,8 +59,13 @@ function hd_play_modal() {
                 <?php endforeach; ?>
               </div>
             <?php else: ?>
-              <p class="hd-hint">Nemáš zatím žádné hráče. Přidej je v administraci (👥 Hráči).</p>
+              <p class="hd-hint">Nemáš zatím žádné hráče. Přidej je v sekci 👥 Hráči.</p>
             <?php endif; ?>
+            <div id="hdExtList"></div>
+            <div class="hd-ext-add">
+              <input type="text" id="hdExtName" placeholder="Jméno hosta (neuloží se mezi hráče)">
+              <button type="button" class="btn small ghost js-add-ext">+ Přidat hosta</button>
+            </div>
           </fieldset>
           <label class="hd-fld">Poznámky ke hře
             <textarea name="note" rows="3" placeholder="Jak to probíhalo, domácí pravidla…"></textarea>
@@ -165,6 +171,12 @@ function hd_handle_add_play() {
     $winners = array_values(array_intersect($winners, $players)); // vítěz musí být mezi hrajícími
     $note    = wp_kses_post(wp_unslash($_POST['note'] ?? ''));
 
+    // externí hosté (neukládají se do hráčů) – jen jména
+    $ext_players = array_values(array_filter(array_map(function ($n) { return sanitize_text_field(trim(wp_unslash($n))); }, (array)($_POST['ext_players'] ?? []))));
+    $ext_players = array_values(array_unique($ext_players));
+    $ext_winners = array_map(function ($n) { return sanitize_text_field(trim(wp_unslash($n))); }, (array)($_POST['ext_winners'] ?? []));
+    $ext_winners = array_values(array_intersect($ext_winners, $ext_players));
+
     $title = trim(get_the_title($gid) . ' ' . $date);
     $pid = intval($_POST['play_id'] ?? 0);
     if ($pid && get_post_type($pid) === 'partie') {
@@ -185,6 +197,8 @@ function hd_handle_add_play() {
     update_post_meta($id, 'play_date', $date);
     update_post_meta($id, 'players', $players);
     update_post_meta($id, 'winners', $winners);
+    update_post_meta($id, 'ext_players', $ext_players);
+    update_post_meta($id, 'ext_winners', $ext_winners);
     update_post_meta($id, 'note', $note);
 
     wp_safe_redirect(add_query_arg('hd_play', 'ok', get_post_type_archive_link('partie')));

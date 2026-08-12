@@ -55,6 +55,15 @@ function hd_player_name($hrac_id) {
     return $nick ?: get_the_title($hrac_id);
 }
 
+/** Avatar externího hosta (šedé kolečko s iniciálou). */
+function hd_ext_avatar($name, $size = 28) {
+    $init = mb_strtoupper(mb_substr(trim($name), 0, 1));
+    return sprintf(
+        '<span class="avatar ext-av" style="width:%1$dpx;height:%1$dpx;font-size:%2$dpx">%3$s</span>',
+        $size, round($size * 0.46), esc_html($init ?: '?')
+    );
+}
+
 /** Vytáhne ID YouTube videa z různých tvarů odkazu. */
 function hd_youtube_id($url) {
     if (!$url) return '';
@@ -129,9 +138,11 @@ function hd_play_edit_json($pid) {
         'id'        => $pid,
         'game'      => (int) hd_meta($pid, 'game'),
         'play_date' => hd_meta($pid, 'play_date'),
-        'players'   => array_map('intval', (array) hd_meta($pid, 'players', [])),
-        'winners'   => array_map('intval', (array) hd_meta($pid, 'winners', [])),
-        'note'      => hd_meta($pid, 'note'),
+        'players'     => array_map('intval', (array) hd_meta($pid, 'players', [])),
+        'winners'     => array_map('intval', (array) hd_meta($pid, 'winners', [])),
+        'ext_players' => array_values((array) hd_meta($pid, 'ext_players', [])),
+        'ext_winners' => array_values((array) hd_meta($pid, 'ext_winners', [])),
+        'note'        => hd_meta($pid, 'note'),
     ];
     return esc_attr(wp_json_encode($d));
 }

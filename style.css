@@ -5,7 +5,7 @@ GitHub Theme URI: https://github.com/kristyna-rehakova/herni-denik-theme
 Update URI: https://github.com/kristyna-rehakova/herni-denik-theme
 Description: Skupinový deník deskových her — sbírka (Herna), odehrané hry (Deník), hráči. Vlastní typy obsahu + přihlášení a role přes WordPress. Nasazení přes GitHub Updater / WP Pusher.
 Author: Herní deník
-Version: 0.8.0
+Version: 0.9.0
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
@@ -133,6 +133,30 @@ main{max-width:1100px;margin:22px auto;padding:0 16px 60px}
 .hd-modal-wide{max-width:640px}
 .gf-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
 .imp-changed{border-color:#3f9a52 !important;box-shadow:0 0 0 2px rgba(63,154,82,.30) !important;background:#f2fbf2 !important}
+/* externí hosté v partii */
+.ext-av{background:#b0a89c}
+.hd-ext-add{display:flex;gap:8px;margin-top:8px}
+.hd-ext-add input{flex:1;padding:8px 11px;border:1px solid var(--line);border-radius:10px;font-family:inherit;font-size:.9rem}
+.hd-prow.ext .ext-tag{font-size:.68rem;color:var(--muted);background:#eee;border-radius:6px;padding:1px 6px;margin-left:2px}
+.js-rm-ext{border:none;background:none;cursor:pointer;font-size:1.25rem;color:var(--muted);line-height:1}
+.js-rm-ext:hover{color:#c0392b}
+/* sekce Hráči */
+.players-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+.player-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;display:flex;align-items:center;gap:14px;position:relative}
+.player-card .who{flex:1;min-width:0}
+.player-card .who .nick{font-weight:700;color:var(--wood-dark)}
+.player-card .who .name{font-size:.85rem;color:var(--muted)}
+.player-card .pl-tools{display:flex;gap:6px}
+.player-card .pl-tools button,.player-card .pl-tools a{border:none;background:none;cursor:pointer;font-size:1rem;opacity:.7;padding:2px;text-decoration:none}
+.player-card .pl-tools button:hover,.player-card .pl-tools a:hover{opacity:1}
+.pf-preview{display:flex;justify-content:center;margin-bottom:8px}
+.pf-colors{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pf-colors input[type=color]{width:44px;height:36px;border:1px solid var(--line);border-radius:8px;background:none;cursor:pointer;padding:2px}
+.swatches{display:flex;gap:6px;flex-wrap:wrap}
+.swatch{width:28px;height:28px;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px var(--line);cursor:pointer;padding:0}
+.emoji-presets{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.emoji-opt{width:38px;height:38px;border:1px solid var(--line);background:#fff;border-radius:9px;cursor:pointer;font-size:1.15rem}
+.emoji-opt:hover{border-color:var(--accent)}
 
 /* editor obrázku */
 .imgstage{width:100%;max-width:300px;aspect-ratio:1/1;margin:0 auto 10px;background:#e6ecd6;border:1px solid var(--line);border-radius:12px;overflow:hidden;position:relative;touch-action:none;user-select:none}

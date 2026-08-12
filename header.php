@@ -29,7 +29,7 @@
         <li class="<?php echo is_front_page() ? 'current-menu-item' : ''; ?>"><a href="<?php echo esc_url(home_url('/')); ?>">🏠 Herna</a></li>
         <li class="<?php echo is_post_type_archive('partie') ? 'current-menu-item' : ''; ?>"><a href="<?php echo esc_url(get_post_type_archive_link('partie')); ?>">📖 Deník</a></li>
         <li class="<?php echo (function_exists('hd_stats_url') && is_page(get_option('hd_stats_page_id'))) ? 'current-menu-item' : ''; ?>"><a href="<?php echo esc_url(function_exists('hd_stats_url') ? hd_stats_url() : home_url('/')); ?>">📊 Statistiky</a></li>
-        <li><a href="<?php echo esc_url(admin_url('edit.php?post_type=hrac')); ?>">👥 Hráči</a></li>
+        <li class="<?php echo (function_exists('hd_hraci_url') && is_page(get_option('hd_hraci_page_id'))) ? 'current-menu-item' : ''; ?>"><a href="<?php echo esc_url(function_exists('hd_hraci_url') ? hd_hraci_url() : admin_url('edit.php?post_type=hrac')); ?>">👥 Hráči</a></li>
       </ul>
     <?php } ?>
   </nav>

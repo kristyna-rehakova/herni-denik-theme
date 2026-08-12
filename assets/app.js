@@ -120,6 +120,124 @@
     });
   }
 
+  /* ---------- IMPORT (zatím jen upozornění) ---------- */
+  var importModal = document.getElementById('hdImportModal');
+  document.addEventListener('click', function (e) {
+    if (e.target.closest('.js-open-import') && importModal) { e.preventDefault(); importModal.hidden = false; }
+    if (e.target.closest('.js-close-import') && importModal) { e.preventDefault(); importModal.hidden = true; }
+  });
+
+  /* ---------- EDITOR OBRÁZKU ---------- */
+  var cover = document.getElementById('hdCoverModal');
+  if (cover) {
+    var stage = document.getElementById('hdStage');
+    var iGame = document.getElementById('hdCoverGame');
+    var iX = document.getElementById('hdCoverX');
+    var iY = document.getElementById('hdCoverY');
+    var iZoom = document.getElementById('hdCoverZoom');
+    var iSize = document.getElementById('hdCoverSize');
+    var iRemove = document.getElementById('hdCoverRemove');
+    var fileInput = document.getElementById('hdCoverFile');
+    var urlInput = document.getElementById('hdCoverUrl');
+    var st = { image: '', x: 50, y: 50, zoom: 1, a: null };
+
+    function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+    function sizeCss() { return st.a >= 1 ? 'auto ' + (st.zoom * 100) + '%' : (st.zoom * 100) + '% auto'; }
+
+    function draw() {
+      if (st.image && st.a) {
+        stage.innerHTML = '<div class="cover" style="background-image:url(\'' + st.image.replace(/'/g, "%27") + '\');background-size:' + sizeCss() + ';background-position:' + st.x + '% ' + st.y + '%"></div>';
+      } else {
+        stage.innerHTML = '<div class="ph">🎲</div>';
+      }
+      // zapiš do skrytých polí
+      iX.value = st.x; iY.value = st.y; iZoom.value = st.zoom;
+      iSize.value = (st.image && st.a) ? sizeCss() : '';
+    }
+    function dims() {
+      var S = stage.clientWidth || 280;
+      if (!st.a) return null;
+      var DW, DH;
+      if (st.a >= 1) { DH = st.zoom * S; DW = DH * st.a; } else { DW = st.zoom * S; DH = DW / st.a; }
+      return { OW: Math.max(0, DW - S), OH: Math.max(0, DH - S) };
+    }
+    function loadAspect(cb) {
+      if (!st.image) { st.a = null; cb && cb(); return; }
+      var im = new Image();
+      im.onload = function () { st.a = im.naturalWidth / im.naturalHeight || 1; cb && cb(); };
+      im.onerror = function () { st.a = null; cb && cb(); };
+      im.src = st.image;
+    }
+    function refresh() { loadAspect(draw); }
+
+    function openCover(btn) {
+      st.image = btn.dataset.img || '';
+      st.x = parseFloat(btn.dataset.x); if (isNaN(st.x)) st.x = 50;
+      st.y = parseFloat(btn.dataset.y); if (isNaN(st.y)) st.y = 50;
+      st.zoom = parseFloat(btn.dataset.zoom) || 1;
+      iGame.value = btn.dataset.game || '';
+      iRemove.value = '';
+      urlInput.value = '';
+      if (fileInput) fileInput.value = '';
+      refresh();
+      cover.hidden = false;
+      document.body.style.overflow = 'hidden';
+    }
+    function closeCover() { cover.hidden = true; document.body.style.overflow = ''; }
+
+    document.addEventListener('click', function (e) {
+      var op = e.target.closest('.js-edit-cover');
+      if (op) { e.preventDefault(); openCover(op); return; }
+      if (e.target.closest('.js-close-cover')) { e.preventDefault(); closeCover(); }
+    });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !cover.hidden) closeCover(); });
+
+    // tažení
+    var dragging = false, lx = 0, ly = 0;
+    stage.addEventListener('pointerdown', function (e) {
+      if (!st.image || !st.a) return;
+      dragging = true; lx = e.clientX; ly = e.clientY; stage.classList.add('dragging');
+      try { stage.setPointerCapture(e.pointerId); } catch (_) {}
+    });
+    stage.addEventListener('pointermove', function (e) {
+      if (!dragging) return;
+      var d = dims(); if (!d) return;
+      var dx = e.clientX - lx, dy = e.clientY - ly; lx = e.clientX; ly = e.clientY;
+      if (d.OW > 0) st.x = clamp(st.x - dx / d.OW * 100, 0, 100);
+      if (d.OH > 0) st.y = clamp(st.y - dy / d.OH * 100, 0, 100);
+      draw();
+    });
+    function endDrag() { dragging = false; stage.classList.remove('dragging'); }
+    stage.addEventListener('pointerup', endDrag);
+    stage.addEventListener('pointercancel', endDrag);
+    stage.addEventListener('wheel', function (e) {
+      if (!st.image || !st.a) return;
+      e.preventDefault();
+      st.zoom = clamp(st.zoom + (e.deltaY < 0 ? 0.12 : -0.12), 1, 4);
+      draw();
+    }, { passive: false });
+    function zoomBy(dz) { if (!st.image || !st.a) return; st.zoom = clamp(st.zoom + dz, 1, 4); draw(); }
+    document.getElementById('hdZoomIn').addEventListener('click', function () { zoomBy(0.2); });
+    document.getElementById('hdZoomOut').addEventListener('click', function () { zoomBy(-0.2); });
+
+    urlInput.addEventListener('input', function () {
+      st.image = urlInput.value.trim(); st.x = 50; st.y = 50; st.zoom = 1; iRemove.value = '';
+      if (fileInput) fileInput.value = '';
+      refresh();
+    });
+    if (fileInput) fileInput.addEventListener('change', function () {
+      var f = fileInput.files[0]; if (!f) return;
+      st.image = URL.createObjectURL(f); st.x = 50; st.y = 50; st.zoom = 1; iRemove.value = '';
+      urlInput.value = '';
+      refresh();
+    });
+    document.getElementById('hdCoverClear').addEventListener('click', function () {
+      st.image = ''; st.a = null; iRemove.value = '1'; urlInput.value = '';
+      if (fileInput) fileInput.value = '';
+      draw();
+    });
+  }
+
   /* ---------- POTVRZENÍ SMAZÁNÍ HRY ---------- */
   document.addEventListener('click', function (e) {
     var del = e.target.closest('.js-del-game');

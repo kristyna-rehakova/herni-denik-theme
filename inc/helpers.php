@@ -71,6 +71,36 @@ function hd_format_date($ymd) {
     return date_i18n('j. n. Y', $t);
 }
 
+/** Inline styl obálky (background-image + pozice + velikost) z náhledového obrázku a meta. */
+function hd_cover_style($id) {
+    $tid = get_post_thumbnail_id($id);
+    if (!$tid) return '';
+    $url = wp_get_attachment_image_url($tid, 'large');
+    if (!$url) return '';
+    $x = hd_meta($id, 'img_x'); $x = ($x === '') ? 50 : $x;
+    $y = hd_meta($id, 'img_y'); $y = ($y === '') ? 50 : $y;
+    $size = hd_meta($id, 'img_size'); if (!$size) $size = 'cover';
+    return "background-image:url('" . esc_url($url) . "');background-size:" . esc_attr($size) . ";background-position:" . esc_attr($x) . "% " . esc_attr($y) . "%";
+}
+
+/** Vnitřek obálky: div.cover se stylem, nebo emoji fallback. */
+function hd_cover_inner($id, $fallback = '🎲') {
+    $cs = hd_cover_style($id);
+    return $cs ? '<div class="cover" style="' . $cs . '"></div>' : $fallback;
+}
+
+/** Data-atributy pro editor obrázku (na tlačítko tužky). */
+function hd_cover_data($id) {
+    $tid = get_post_thumbnail_id($id);
+    $url = $tid ? wp_get_attachment_image_url($tid, 'large') : '';
+    $x = hd_meta($id, 'img_x'); $x = ($x === '') ? 50 : $x;
+    $y = hd_meta($id, 'img_y'); $y = ($y === '') ? 50 : $y;
+    $zoom = hd_meta($id, 'img_zoom'); $zoom = $zoom ?: 1;
+    $size = hd_meta($id, 'img_size');
+    return sprintf('data-game="%d" data-img="%s" data-x="%s" data-y="%s" data-zoom="%s" data-size="%s"',
+        $id, esc_attr($url), esc_attr($x), esc_attr($y), esc_attr($zoom), esc_attr($size));
+}
+
 /** Počet odehraných partií dané hry. */
 function hd_play_count($game_id) {
     $q = new WP_Query([

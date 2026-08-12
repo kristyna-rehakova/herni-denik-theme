@@ -36,12 +36,18 @@ $plays = new WP_Query([
     'orderby'        => ['date_clause' => 'DESC'],
 ]);
 ?>
+<?php if (isset($_GET['hd_cover']) && $_GET['hd_cover'] === 'ok'): ?>
+  <div class="hd-flash ok">🖼 Obrázek byl uložen.</div>
+<?php endif; ?>
 <p><a class="btn back" href="<?php echo esc_url(home_url('/')); ?>">← Zpět do Herny</a></p>
 
 <article class="detail">
   <div class="detail-head">
     <div class="detail-img">
-      <?php if (has_post_thumbnail()) the_post_thumbnail('large'); else echo '<span class="ph">🎲</span>'; ?>
+      <?php echo hd_cover_inner($id, '<span class="ph">🎲</span>'); ?>
+      <?php if (current_user_can('edit_post', $id)): ?>
+        <button type="button" class="thumb-edit js-edit-cover" <?php echo hd_cover_data($id); ?> title="Změnit obrázek">✏️</button>
+      <?php endif; ?>
     </div>
     <div class="detail-info">
       <h1><?php the_title(); ?><?php if ($checked) echo ' <span class="chk" title="Popis zkontrolován">✅</span>'; ?></h1>

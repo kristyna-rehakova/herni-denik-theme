@@ -70,6 +70,99 @@ function hd_play_modal() {
 }
 add_action('wp_footer', 'hd_play_modal');
 
+/** Modal editoru obrázku (jen pro editory, na Herně a v detailu hry). */
+function hd_cover_modal() {
+    if (!current_user_can('edit_posts')) return;
+    if (!(is_front_page() || is_singular('hra'))) return;
+    ?>
+    <div class="hd-modal" id="hdCoverModal" hidden>
+      <div class="hd-modal-bg js-close-cover"></div>
+      <div class="hd-modal-card" role="dialog" aria-modal="true" aria-label="Obrázek hry">
+        <button type="button" class="hd-modal-x js-close-cover">×</button>
+        <h2>🖼 Obrázek hry</h2>
+        <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" enctype="multipart/form-data">
+          <input type="hidden" name="action" value="hd_save_cover">
+          <?php wp_nonce_field('hd_save_cover', 'hd_cover_nonce'); ?>
+          <input type="hidden" name="game" id="hdCoverGame">
+          <input type="hidden" name="img_x" id="hdCoverX" value="50">
+          <input type="hidden" name="img_y" id="hdCoverY" value="50">
+          <input type="hidden" name="img_zoom" id="hdCoverZoom" value="1">
+          <input type="hidden" name="img_size" id="hdCoverSize" value="">
+          <input type="hidden" name="remove" id="hdCoverRemove" value="">
+          <div class="imgstage" id="hdStage"><div class="ph">🎲</div></div>
+          <div class="zoombar">
+            <button type="button" class="zoombtn" id="hdZoomOut" title="Oddálit">−</button>
+            <span>Přiblížení (nebo kolečkem myši)</span>
+            <button type="button" class="zoombtn" id="hdZoomIn" title="Přiblížit">+</button>
+          </div>
+          <div class="hd-cover-tools">
+            <label class="btn small ghost">📁 Nahrát vlastní<input type="file" name="cover_file" id="hdCoverFile" accept="image/*" hidden></label>
+            <button type="button" class="btn small ghost" id="hdCoverClear">Odebrat obrázek</button>
+          </div>
+          <label class="hd-fld">nebo URL obrázku<input type="url" name="img_url" id="hdCoverUrl" placeholder="https://…"></label>
+          <p class="hd-hint">Táhni obrázkem pro posun výřezu, přibliž kolečkem myši nebo tlačítky −/+.</p>
+          <div class="hd-modal-actions">
+            <button type="button" class="btn back js-close-cover">Zrušit</button>
+            <button type="submit" class="btn">Uložit obrázek</button>
+          </div>
+        </form>
+      </div>
+    </div>
+    <?php
+}
+add_action('wp_footer', 'hd_cover_modal');
+
+/** Zpracování uložení obrázku. */
+function hd_handle_save_cover() {
+    if (empty($_POST['hd_cover_nonce']) || !wp_verify_nonce($_POST['hd_cover_nonce'], 'hd_save_cover')) wp_die('Neplatný požadavek.');
+    $gid = intval($_POST['game'] ?? 0);
+    if (!$gid || get_post_type($gid) !== 'hra' || !current_user_can('edit_post', $gid)) wp_die('Na úpravu obrázku nemáš oprávnění.');
+    $back = wp_get_referer() ?: get_permalink($gid);
+
+    require_once ABSPATH . 'wp-admin/includes/file.php';
+    require_once ABSPATH . 'wp-admin/includes/media.php';
+    require_once ABSPATH . 'wp-admin/includes/image.php';
+
+    if (!empty($_POST['remove'])) {
+        delete_post_thumbnail($gid);
+        foreach (['img_x','img_y','img_zoom','img_size'] as $k) delete_post_meta($gid, $k);
+        wp_safe_redirect(add_query_arg('hd_cover', 'ok', $back)); exit;
+    }
+
+    if (!empty($_FILES['cover_file']['name'])) {
+        $att = media_handle_upload('cover_file', $gid);
+        if (!is_wp_error($att)) set_post_thumbnail($gid, $att);
+    } elseif (!empty($_POST['img_url'])) {
+        $att = media_sideload_image(esc_url_raw($_POST['img_url']), $gid, null, 'id');
+        if (!is_wp_error($att)) set_post_thumbnail($gid, $att);
+    }
+    update_post_meta($gid, 'img_x', floatval($_POST['img_x'] ?? 50));
+    update_post_meta($gid, 'img_y', floatval($_POST['img_y'] ?? 50));
+    update_post_meta($gid, 'img_zoom', floatval($_POST['img_zoom'] ?? 1));
+    update_post_meta($gid, 'img_size', sanitize_text_field($_POST['img_size'] ?? ''));
+
+    wp_safe_redirect(add_query_arg('hd_cover', 'ok', $back)); exit;
+}
+add_action('admin_post_hd_save_cover', 'hd_handle_save_cover');
+
+/** Modal Importu (zatím jen upozornění – paste-import přijde v další fázi). */
+function hd_import_modal() {
+    if (!current_user_can('edit_posts') || !is_front_page()) return;
+    ?>
+    <div class="hd-modal" id="hdImportModal" hidden>
+      <div class="hd-modal-bg js-close-import"></div>
+      <div class="hd-modal-card">
+        <button type="button" class="hd-modal-x js-close-import">×</button>
+        <h2>📋 Import hry</h2>
+        <p style="line-height:1.5">Import údajů vložením obsahu stránky ze <strong>Zatrolených</strong> / <strong>Mindoku</strong> (jako v původní appce) připravuji do příští aktualizace.</p>
+        <p style="line-height:1.5">Zatím přidávej hry tlačítkem <strong>♟️ Přidat deskovku</strong> a obrázek nastav tužkou ✏️ na obálce.</p>
+        <div class="hd-modal-actions"><button type="button" class="btn js-close-import">Rozumím</button></div>
+      </div>
+    </div>
+    <?php
+}
+add_action('wp_footer', 'hd_import_modal');
+
 /** Zpracování odeslaného formuláře partie. */
 function hd_handle_add_play() {
     if (!is_user_logged_in()) wp_die('Pro zápis partie musíš být přihlášen.');

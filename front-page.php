@@ -27,13 +27,18 @@ $total = $games->post_count;
 <?php if (isset($_GET['hd_del']) && $_GET['hd_del'] === 'ok'): ?>
   <div class="hd-flash ok">🗑️ Hra byla přesunuta do koše.</div>
 <?php endif; ?>
+<?php if (isset($_GET['hd_cover']) && $_GET['hd_cover'] === 'ok'): ?>
+  <div class="hd-flash ok">🖼 Obrázek byl uložen.</div>
+<?php endif; ?>
 
-<div class="page-head">
-  <h1 class="page-title">🏠 Herna</h1>
-  <?php if (current_user_can('edit_posts')): ?>
+<h1 class="page-title">🏠 Herna</h1>
+
+<?php if (current_user_can('edit_posts')): ?>
+  <div class="topbtns">
     <a class="btn big" href="<?php echo esc_url(admin_url('post-new.php?post_type=hra')); ?>">♟️ Přidat deskovku</a>
-  <?php endif; ?>
-</div>
+    <button type="button" class="btn big secondary js-open-import">📋 Import</button>
+  </div>
+<?php endif; ?>
 
 <?php if ($games->have_posts()): ?>
   <div class="toolbar card">
@@ -60,15 +65,27 @@ $total = $games->post_count;
       <?php foreach ($pubs as $pv) echo '<option value="' . esc_attr($pv) . '">' . esc_html($pv) . '</option>'; ?>
     </select>
     <?php endif; ?>
-    <select id="hdSort" aria-label="Řadit" class="hd-sort">
-      <option value="name">Řadit: abecedně</option>
-      <option value="diff">Řadit: dle obtížnosti</option>
-      <option value="plays">Řadit: dle odehrání</option>
-    </select>
-    <span class="hd-view">
-      <button type="button" class="hd-view-btn" data-view="grid" title="Dlaždice">▦</button>
-      <button type="button" class="hd-view-btn" data-view="list" title="Seznam">☰</button>
-    </span>
+  </div>
+
+  <div class="legend-row">
+    <div class="legend">
+      <span class="item">🎲 = zapsat do Deníku</span>
+      <span class="item">✏️ = editovat info o hře</span>
+      <span class="item">🗑️ = smazat hru ze seznamu</span>
+    </div>
+    <div class="rowtools">
+      <label class="sortlbl">Řadit:
+        <select id="hdSort">
+          <option value="name">abecedně</option>
+          <option value="diff">dle obtížnosti</option>
+          <option value="plays">dle odehrání</option>
+        </select>
+      </label>
+      <span class="hd-view">
+        <button type="button" class="hd-view-btn" data-view="grid" title="Dlaždice">▦</button>
+        <button type="button" class="hd-view-btn" data-view="list" title="Seznam">☰</button>
+      </span>
+    </div>
   </div>
 
   <p class="hd-resultcount"><span id="hdCount"><?php echo (int)$total; ?></span> her</p>

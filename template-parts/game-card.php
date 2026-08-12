@@ -23,10 +23,13 @@ $t_for_filter = hd_meta($id, 'time_max') ?: hd_meta($id, 'time_min');
      data-weight="<?php echo esc_attr(hd_meta($id, 'weight')); ?>"
      data-pub="<?php echo esc_attr($pub); ?>"
      data-plays="<?php echo (int) $plays; ?>">
+  <div class="thumb">
+    <a class="thumb-link" href="<?php the_permalink(); ?>"><?php echo hd_cover_inner($id); ?></a>
+    <?php if (current_user_can('edit_post', $id)): ?>
+      <button type="button" class="thumb-edit js-edit-cover" <?php echo hd_cover_data($id); ?> title="Změnit obrázek">✏️</button>
+    <?php endif; ?>
+  </div>
   <a class="card-link" href="<?php the_permalink(); ?>">
-    <div class="thumb">
-      <?php if (has_post_thumbnail()) the_post_thumbnail('medium'); else echo '🎲'; ?>
-    </div>
     <div class="body">
       <h3><?php the_title(); ?><?php if ($checked) echo ' <span class="chk" title="Popis zkontrolován">✅</span>'; ?></h3>
       <div class="meta">

@@ -145,24 +145,6 @@ function hd_handle_save_cover() {
 }
 add_action('admin_post_hd_save_cover', 'hd_handle_save_cover');
 
-/** Modal Importu (zatím jen upozornění – paste-import přijde v další fázi). */
-function hd_import_modal() {
-    if (!current_user_can('edit_posts') || !is_front_page()) return;
-    ?>
-    <div class="hd-modal" id="hdImportModal" hidden>
-      <div class="hd-modal-bg js-close-import"></div>
-      <div class="hd-modal-card">
-        <button type="button" class="hd-modal-x js-close-import">×</button>
-        <h2>📋 Import hry</h2>
-        <p style="line-height:1.5">Import údajů vložením obsahu stránky ze <strong>Zatrolených</strong> / <strong>Mindoku</strong> (jako v původní appce) připravuji do příští aktualizace.</p>
-        <p style="line-height:1.5">Zatím přidávej hry tlačítkem <strong>♟️ Přidat deskovku</strong> a obrázek nastav tužkou ✏️ na obálce.</p>
-        <div class="hd-modal-actions"><button type="button" class="btn js-close-import">Rozumím</button></div>
-      </div>
-    </div>
-    <?php
-}
-add_action('wp_footer', 'hd_import_modal');
-
 /** Zpracování odeslaného formuláře partie. */
 function hd_handle_add_play() {
     if (!is_user_logged_in()) wp_die('Pro zápis partie musíš být přihlášen.');

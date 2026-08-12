@@ -12,6 +12,7 @@ function hd_front_assets() {
         wp_localize_script('hd-app', 'HD', [
             'ajax'       => admin_url('admin-ajax.php'),
             'parseNonce' => wp_create_nonce('hd_import_parse'),
+            'expansions' => hd_all_expansions(),
         ]);
     }
 }
@@ -67,6 +68,10 @@ function hd_play_modal() {
               <button type="button" class="btn small ghost js-add-ext">+ Přidat hosta</button>
             </div>
           </fieldset>
+          <div class="hd-fld" id="hdPlayExpWrap" hidden>
+            <span>Použitá rozšíření</span>
+            <div id="hdPlayExp" class="hd-exp-checks"></div>
+          </div>
           <label class="hd-fld">Poznámky ke hře
             <textarea name="note" rows="3" placeholder="Jak to probíhalo, domácí pravidla…"></textarea>
           </label>
@@ -199,6 +204,8 @@ function hd_handle_add_play() {
     update_post_meta($id, 'winners', $winners);
     update_post_meta($id, 'ext_players', $ext_players);
     update_post_meta($id, 'ext_winners', $ext_winners);
+    $play_exps = array_values(array_filter(array_map(function ($n) { return sanitize_text_field(trim(wp_unslash($n))); }, (array)($_POST['play_expansions'] ?? []))));
+    update_post_meta($id, 'play_expansions', $play_exps);
     update_post_meta($id, 'note', $note);
 
     wp_safe_redirect(add_query_arg('hd_play', 'ok', get_post_type_archive_link('partie')));

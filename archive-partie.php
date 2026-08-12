@@ -102,6 +102,7 @@ $all_games   = hd_all_games();
             <?php endif; ?>
             <?php if ($pnames) echo '<div class="pl-line">👥 ' . esc_html(implode(', ', $pnames)) . '</div>'; ?>
             <?php if ($wnames) echo '<div class="win-line">🏆 ' . esc_html(implode(', ', $wnames)) . '</div>'; ?>
+            <?php $pexps = (array) hd_meta($pid, 'play_expansions', []); if ($pexps) echo '<div class="pexp-line">🧩 ' . esc_html(implode(', ', $pexps)) . '</div>'; ?>
             <?php if ($note) echo '<div class="pnote">📝 ' . nl2br(esc_html($note)) . '</div>'; ?>
           </div>
           <?php if (current_user_can('edit_post', $pid)): ?>

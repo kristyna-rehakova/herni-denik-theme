@@ -150,6 +150,7 @@ function hd_play_edit_json($pid) {
         'winners'     => array_map('intval', (array) hd_meta($pid, 'winners', [])),
         'ext_players' => array_values((array) hd_meta($pid, 'ext_players', [])),
         'ext_winners' => array_values((array) hd_meta($pid, 'ext_winners', [])),
+        'play_expansions' => array_values((array) hd_meta($pid, 'play_expansions', [])),
         'note'        => hd_meta($pid, 'note'),
     ];
     return esc_attr(wp_json_encode($d));
@@ -169,6 +170,19 @@ function hd_play_count($game_id) {
 function hd_all_games() {
     $out = [];
     foreach (get_posts(['post_type'=>'hra','numberposts'=>-1,'orderby'=>'title','order'=>'ASC']) as $p) $out[$p->ID] = $p->post_title;
+    return $out;
+}
+
+/** Mapa hra→[názvy rozšíření] pro zaškrtávátka v zápisu partie. */
+function hd_all_expansions() {
+    $out = [];
+    foreach (get_posts(['post_type' => 'hra', 'numberposts' => -1, 'fields' => 'ids']) as $gid) {
+        $names = [];
+        foreach ((array) get_post_meta($gid, 'expansions', true) as $e) {
+            if (!empty($e['name'])) $names[] = $e['name'];
+        }
+        if ($names) $out[$gid] = $names;
+    }
     return $out;
 }
 

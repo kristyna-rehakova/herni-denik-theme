@@ -28,31 +28,39 @@ function hd_section_photos($id) {
     if (!$can && !$photos) return;
     ?>
     <section class="game-section" id="fotky">
-      <div class="sec-head"><h2>📷 Fotky</h2></div>
-      <?php if ($photos): ?>
-        <div class="photo-grid">
-          <?php foreach ($photos as $att):
-            $url = wp_get_attachment_image_url($att, 'large');
-            if (!$url) continue; ?>
-            <div class="photo-item">
-              <a href="<?php echo esc_url(wp_get_attachment_url($att)); ?>" target="_blank" rel="noopener">
-                <img src="<?php echo esc_url($url); ?>" alt="" loading="lazy">
-              </a>
-              <?php if ($can): ?>
-                <a class="photo-del" href="<?php echo esc_url(wp_nonce_url(admin_url('admin-post.php?action=hd_del_photo&game=' . $id . '&att=' . $att), 'hd_delphoto_' . $id . '_' . $att)); ?>" title="Smazat fotku" onclick="return confirm('Smazat tuto fotku?')">×</a>
-              <?php endif; ?>
-            </div>
-          <?php endforeach; ?>
-        </div>
-      <?php endif; ?>
+      <div class="sec-head">
+        <h2>📷 Fotky</h2>
+        <?php if ($can): ?><button type="button" class="btn small js-toggle" data-target="fotkyForm">+ Přidat</button><?php endif; ?>
+      </div>
       <?php if ($can): ?>
-        <form class="upload-row" method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" enctype="multipart/form-data">
+        <form id="fotkyForm" class="sec-body sec-form" method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" enctype="multipart/form-data" hidden>
           <input type="hidden" name="action" value="hd_add_photos">
           <input type="hidden" name="game" value="<?php echo $id; ?>">
           <?php wp_nonce_field('hd_addphotos_' . $id, 'hd_photos_nonce'); ?>
-          <input type="file" name="photos[]" accept="image/*" multiple>
-          <button type="submit" class="btn small">Nahrát fotky</button>
+          <div class="upload-row">
+            <label class="btn small ghost">🖼️ Vybrat<input type="file" name="photos[]" accept="image/*" multiple hidden></label>
+            <label class="btn small ghost">📷 Vyfotit<input type="file" name="photos_cam[]" accept="image/*" capture="environment" hidden></label>
+            <button type="submit" class="btn small">Nahrát</button>
+          </div>
         </form>
+      <?php endif; ?>
+      <?php if ($photos): ?>
+        <div class="sec-body">
+          <div class="photo-grid">
+            <?php foreach ($photos as $att):
+              $url = wp_get_attachment_image_url($att, 'large');
+              if (!$url) continue; ?>
+              <div class="photo-item">
+                <a href="<?php echo esc_url(wp_get_attachment_url($att)); ?>" target="_blank" rel="noopener">
+                  <img src="<?php echo esc_url($url); ?>" alt="" loading="lazy">
+                </a>
+                <?php if ($can): ?>
+                  <a class="photo-del" href="<?php echo esc_url(wp_nonce_url(admin_url('admin-post.php?action=hd_del_photo&game=' . $id . '&att=' . $att), 'hd_delphoto_' . $id . '_' . $att)); ?>" title="Smazat fotku" onclick="return confirm('Smazat tuto fotku?')">×</a>
+                <?php endif; ?>
+              </div>
+            <?php endforeach; ?>
+          </div>
+        </div>
       <?php endif; ?>
     </section>
     <?php
@@ -63,10 +71,12 @@ function hd_handle_add_photos() {
     if (!$gid || !current_user_can('edit_post', $gid)) wp_die('Nemáš oprávnění.');
     if (empty($_POST['hd_photos_nonce']) || !wp_verify_nonce($_POST['hd_photos_nonce'], 'hd_addphotos_' . $gid)) wp_die('Neplatný požadavek.');
     $ids = array_filter(array_map('intval', (array) get_post_meta($gid, 'photos', true)));
-    if (!empty($_FILES['photos']['name']) && is_array($_FILES['photos']['name'])) {
-        for ($i = 0; $i < count($_FILES['photos']['name']); $i++) {
-            $att = hd_upload_one('photos', $i, $gid);
-            if ($att) $ids[] = $att;
+    foreach (['photos', 'photos_cam'] as $field) {
+        if (!empty($_FILES[$field]['name']) && is_array($_FILES[$field]['name'])) {
+            for ($i = 0; $i < count($_FILES[$field]['name']); $i++) {
+                $att = hd_upload_one($field, $i, $gid);
+                if ($att) $ids[] = $att;
+            }
         }
     }
     update_post_meta($gid, 'photos', array_values(array_unique($ids)));
@@ -92,22 +102,12 @@ function hd_section_rules($id) {
     if (!$can && !$rules) return;
     ?>
     <section class="game-section" id="pravidla">
-      <div class="sec-head"><h2>📄 Pravidla</h2></div>
-      <?php if ($rules): ?>
-        <div class="rules-list">
-          <?php foreach ($rules as $i => $r):
-            $icon = ($r['kind'] ?? '') === 'pdf' ? '📕' : '🔗'; ?>
-            <div class="rule-item">
-              <a href="<?php echo esc_url($r['url'] ?? '#'); ?>" target="_blank" rel="noopener"><?php echo $icon . ' ' . esc_html($r['label'] ?? 'Pravidla'); ?></a>
-              <?php if ($can): ?>
-                <a class="rule-del" href="<?php echo esc_url(wp_nonce_url(admin_url('admin-post.php?action=hd_del_rule&game=' . $id . '&idx=' . $i), 'hd_delrule_' . $id . '_' . $i)); ?>" title="Odebrat" onclick="return confirm('Odebrat tento odkaz?')">🗑️</a>
-              <?php endif; ?>
-            </div>
-          <?php endforeach; ?>
-        </div>
-      <?php endif; ?>
+      <div class="sec-head">
+        <h2>📄 Pravidla</h2>
+        <?php if ($can): ?><button type="button" class="btn small js-toggle" data-target="pravidlaForm">+ Přidat</button><?php endif; ?>
+      </div>
       <?php if ($can): ?>
-        <div class="rules-add">
+        <div id="pravidlaForm" class="sec-body sec-form" hidden>
           <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="upload-row">
             <input type="hidden" name="action" value="hd_add_rule">
             <input type="hidden" name="game" value="<?php echo $id; ?>">
@@ -123,9 +123,24 @@ function hd_section_rules($id) {
             <input type="hidden" name="kind" value="pdf">
             <?php wp_nonce_field('hd_addrule_' . $id, 'hd_rule_nonce'); ?>
             <input type="text" name="label" placeholder="Popisek PDF">
-            <input type="file" name="pdf" accept="application/pdf" required>
-            <button type="submit" class="btn small">+ Nahrát PDF</button>
+            <label class="btn small ghost">📕 Vybrat PDF<input type="file" name="pdf" accept="application/pdf" hidden required></label>
+            <button type="submit" class="btn small">Nahrát PDF</button>
           </form>
+        </div>
+      <?php endif; ?>
+      <?php if ($rules): ?>
+        <div class="sec-body">
+          <div class="rules-list">
+            <?php foreach ($rules as $i => $r):
+              $icon = ($r['kind'] ?? '') === 'pdf' ? '📕' : '🔗'; ?>
+              <div class="rule-item">
+                <a href="<?php echo esc_url($r['url'] ?? '#'); ?>" target="_blank" rel="noopener"><?php echo $icon . ' ' . esc_html($r['label'] ?? 'Pravidla'); ?></a>
+                <?php if ($can): ?>
+                  <a class="rule-del" href="<?php echo esc_url(wp_nonce_url(admin_url('admin-post.php?action=hd_del_rule&game=' . $id . '&idx=' . $i), 'hd_delrule_' . $id . '_' . $i)); ?>" title="Odebrat" onclick="return confirm('Odebrat tento odkaz?')">🗑️</a>
+                <?php endif; ?>
+              </div>
+            <?php endforeach; ?>
+          </div>
         </div>
       <?php endif; ?>
     </section>

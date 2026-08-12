@@ -98,6 +98,24 @@
 
     var extList = document.getElementById('hdExtList');
     var extName = document.getElementById('hdExtName');
+    var expWrap = document.getElementById('hdPlayExpWrap');
+    var expBox = document.getElementById('hdPlayExp');
+
+    function fillPlayExp(gameId, selected) {
+      if (!expWrap || !expBox) return;
+      selected = (selected || []).map(String);
+      var names = (typeof HD !== 'undefined' && HD.expansions && HD.expansions[gameId]) ? HD.expansions[gameId] : [];
+      if (!names.length) { expWrap.hidden = true; expBox.innerHTML = ''; return; }
+      expBox.innerHTML = '';
+      names.forEach(function (n) {
+        var l = document.createElement('label');
+        l.className = 'exp-check';
+        var checked = selected.indexOf(String(n)) > -1 ? ' checked' : '';
+        l.innerHTML = '<input type="checkbox" name="play_expansions[]" value="' + String(n).replace(/"/g, '&quot;') + '"' + checked + '> ' + String(n).replace(/</g, '&lt;');
+        expBox.appendChild(l);
+      });
+      expWrap.hidden = false;
+    }
 
     function setWon(row) {
       var p = row.querySelector('.js-played'), w = row.querySelector('.js-won');
@@ -125,11 +143,13 @@
       modal.querySelectorAll('.js-won').forEach(function (c) { c.checked = false; c.disabled = true; });
       if (extList) extList.innerHTML = '';
       if (extName) extName.value = '';
+      fillPlayExp('', []);
       if (playTitle) playTitle.textContent = '🎲 Zapsat partii';
     }
     function openModal(gameId) {
       resetPlay();
       if (gameId && gameSel) gameSel.value = gameId;
+      fillPlayExp(gameId || '', []);
       modal.hidden = false;
       document.body.style.overflow = 'hidden';
     }
@@ -149,6 +169,7 @@
       });
       var extP = data.ext_players || [], extW = (data.ext_winners || []).map(String);
       extP.forEach(function (n) { addExtRow(n, extW.indexOf(String(n)) > -1); });
+      fillPlayExp(data.game || '', data.play_expansions || []);
       if (playTitle) playTitle.textContent = '✏️ Upravit partii';
       modal.hidden = false;
       document.body.style.overflow = 'hidden';
@@ -181,7 +202,14 @@
       var played = row.querySelector('.js-played');
       if (played) played.addEventListener('change', function () { setWon(row); });
     });
+    if (gameSel) gameSel.addEventListener('change', function () { fillPlayExp(gameSel.value, []); });
   }
+
+  /* ---------- TOGGLE FORMULÁŘŮ (+ Přidat) ---------- */
+  document.addEventListener('click', function (e) {
+    var t = e.target.closest('.js-toggle');
+    if (t) { e.preventDefault(); var el = document.getElementById(t.dataset.target); if (el) el.hidden = !el.hidden; }
+  });
 
   /* ---------- FORMULÁŘ HRY (Nová hra / úprava) ---------- */
   var gameModal = document.getElementById('hdGameModal');

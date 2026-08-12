@@ -123,19 +123,26 @@ $plays = new WP_Query([
   <?php endif; ?>
 
   <?php $yt_id = hd_youtube_id($yt); if ($can || $yt_id): ?>
-    <section class="game-section">
+    <section class="game-section" id="video">
       <div class="sec-head">
         <h2>🎬 Video</h2>
         <?php if ($can): ?>
-          <button type="button" class="btn small ghost js-edit-video" data-game="<?php echo $id; ?>" data-yt="<?php echo esc_attr($yt); ?>">✏️ Upravit</button>
+          <button type="button" class="btn small js-toggle" data-target="videoForm"><?php echo $yt_id ? '✏️ Upravit' : '+ Přidat'; ?></button>
         <?php endif; ?>
       </div>
+      <?php if ($can): ?>
+        <form id="videoForm" class="sec-body sec-form" method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" hidden>
+          <input type="hidden" name="action" value="hd_save_video">
+          <?php wp_nonce_field('hd_save_video', 'hd_video_nonce'); ?>
+          <input type="hidden" name="game_id" value="<?php echo $id; ?>">
+          <label class="hd-fld">Odkaz na YouTube<input type="text" name="youtube" value="<?php echo esc_attr($yt); ?>" placeholder="https://www.youtube.com/watch?v=…"></label>
+          <div class="hd-modal-actions"><button type="submit" class="btn">Uložit</button></div>
+        </form>
+      <?php endif; ?>
       <?php if ($yt_id): ?>
         <div class="video-embed">
           <iframe src="https://www.youtube.com/embed/<?php echo esc_attr($yt_id); ?>" title="YouTube" frameborder="0" allowfullscreen></iframe>
         </div>
-      <?php elseif ($can): ?>
-        <p class="muted">Zatím bez videa. Klikni na „Upravit" a vlož odkaz na YouTube.</p>
       <?php endif; ?>
     </section>
   <?php endif; ?>
@@ -147,24 +154,26 @@ $plays = new WP_Query([
   ?>
 
   <?php if ($plays->have_posts()): ?>
-    <section class="game-plays">
-      <h2>📖 Odehrané partie</h2>
+    <section class="game-section game-plays">
+      <h2>📖 Odehrané hry</h2>
+      <div class="sec-body">
       <?php while ($plays->have_posts()): $plays->the_post();
         $pid = get_the_ID();
         $players = (array) hd_meta($pid, 'players', []);
-        $winners = (array) hd_meta($pid, 'winners', []);
+        $winners = array_map('strval', (array) hd_meta($pid, 'winners', []));
         $ext_players = (array) hd_meta($pid, 'ext_players', []);
         $ext_winners = (array) hd_meta($pid, 'ext_winners', []);
         $pdate = hd_meta($pid, 'play_date');
       ?>
-        <div class="play-row">
+        <div class="gp-row">
           <span class="pdate"><?php echo esc_html(hd_format_date($pdate)); ?></span>
           <span class="pplayers">
-            <?php foreach ($players as $hp) { echo hd_player_avatar($hp, 26); if (in_array((string)$hp, array_map('strval',$winners), true)) echo '🏆'; } ?>
-            <?php foreach ($ext_players as $en) { echo hd_ext_avatar($en, 26); if (in_array($en, $ext_winners, true)) echo '🏆'; } ?>
+            <?php foreach ($players as $hp) { $w = in_array((string)$hp, $winners, true); echo '<span class="pl-chip' . ($w ? ' win' : '') . '" title="' . esc_attr(hd_player_name($hp)) . ($w ? ' 🏆' : '') . '">' . hd_player_avatar($hp, 28) . ($w ? '<span class="win-badge">🏆</span>' : '') . '</span>'; } ?>
+            <?php foreach ($ext_players as $en) { $w = in_array($en, $ext_winners, true); echo '<span class="pl-chip' . ($w ? ' win' : '') . '" title="' . esc_attr($en) . ' (host)' . ($w ? ' 🏆' : '') . '">' . hd_ext_avatar($en, 28) . ($w ? '<span class="win-badge">🏆</span>' : '') . '</span>'; } ?>
           </span>
         </div>
       <?php endwhile; wp_reset_postdata(); ?>
+      </div>
     </section>
   <?php endif; ?>
 

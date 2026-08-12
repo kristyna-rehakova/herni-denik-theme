@@ -63,6 +63,10 @@ function hd_handle_save_desc() {
     if (!in_array($key, ['priprava','prubeh','konec','bodovani'], true)) wp_die('Neplatná sekce.');
     update_post_meta($gid, 'desc_' . $key, sanitize_textarea_field(wp_unslash($_POST['text'] ?? '')));
     update_post_meta($gid, 'desc_' . $key . '_note', sanitize_textarea_field(wp_unslash($_POST['note'] ?? '')));
+    // ruční úprava sekce = nejvyšší priorita (import ji nepřepíše)
+    $fs = (array) get_post_meta($gid, 'field_src', true);
+    $fs['desc_' . $key] = 'manual';
+    update_post_meta($gid, 'field_src', $fs);
 
     // obrázky sekce: odebrání + nahrání nových
     $imgs = array_filter(array_map('intval', (array) get_post_meta($gid, 'desc_' . $key . '_images', true)));
@@ -94,3 +98,14 @@ function hd_handle_save_video() {
     exit;
 }
 add_action('admin_post_hd_save_video', 'hd_handle_save_video');
+
+/** Přepnutí „Zkontrolováno". */
+function hd_handle_toggle_checked() {
+    $gid = intval($_POST['game_id'] ?? 0);
+    if (!$gid || get_post_type($gid) !== 'hra' || !current_user_can('edit_post', $gid)) wp_die('Nemáš oprávnění.');
+    if (empty($_POST['hd_check_nonce']) || !wp_verify_nonce($_POST['hd_check_nonce'], 'hd_toggle_checked')) wp_die('Neplatný požadavek.');
+    update_post_meta($gid, 'desc_checked', !empty($_POST['desc_checked']) ? '1' : '');
+    wp_safe_redirect(get_permalink($gid) . '#popis');
+    exit;
+}
+add_action('admin_post_hd_toggle_checked', 'hd_handle_toggle_checked');

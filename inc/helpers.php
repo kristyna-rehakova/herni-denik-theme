@@ -136,6 +136,7 @@ function hd_game_edit_json($id) {
         'desc_priprava' => hd_meta($id, 'desc_priprava'),
         'desc_prubeh'   => hd_meta($id, 'desc_prubeh'),
         'desc_konec'    => hd_meta($id, 'desc_konec'),
+        'field_src'     => (array) hd_meta($id, 'field_src', []),
     ];
     return esc_attr(wp_json_encode($d));
 }

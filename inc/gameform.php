@@ -20,6 +20,7 @@ function hd_game_form_modal() {
           <input type="hidden" name="action" value="hd_save_game">
           <?php wp_nonce_field('hd_save_game', 'hd_game_nonce'); ?>
           <input type="hidden" name="game_id" id="gfId" value="">
+          <input type="hidden" name="field_src" id="gfFieldSrc" value="">
           <input type="hidden" name="desc_priprava" id="gfDP">
           <input type="hidden" name="desc_prubeh" id="gfDPr">
           <input type="hidden" name="desc_konec" id="gfDK">
@@ -81,6 +82,13 @@ function hd_handle_save_game() {
     // víceřádková
     foreach (['notes','desc_priprava','desc_prubeh','desc_konec'] as $k) {
         if (isset($_POST[$k])) update_post_meta($gid, $k, sanitize_textarea_field(wp_unslash($_POST[$k])));
+    }
+    // zdroje polí (kvůli prioritě importu: ruční > mindok > zatrolené)
+    $fs = json_decode(wp_unslash($_POST['field_src'] ?? '[]'), true);
+    if (is_array($fs)) {
+        $clean = [];
+        foreach ($fs as $k => $v) { if (in_array($v, ['manual','mindok','zatrolene'], true)) $clean[sanitize_key($k)] = $v; }
+        update_post_meta($gid, 'field_src', $clean);
     }
 
     // obrázek: z pole „URL obrázku"; když prázdné a hra nemá obálku, zkus dohledat ze Zatrolených podle odkazu

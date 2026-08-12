@@ -211,6 +211,12 @@
     if (t) { e.preventDefault(); var el = document.getElementById(t.dataset.target); if (el) el.hidden = !el.hidden; }
   });
 
+  /* ---------- AUTO-ODESLÁNÍ (Zkontrolováno) ---------- */
+  document.addEventListener('change', function (e) {
+    var c = e.target.closest('.js-autosubmit');
+    if (c && c.form) c.form.submit();
+  });
+
   /* ---------- FORMULÁŘ HRY (Nová hra / úprava) ---------- */
   var gameModal = document.getElementById('hdGameModal');
   var GF = { // mapa: klíč dat -> id pole
@@ -220,6 +226,10 @@
     desc_priprava: 'gfDP', desc_prubeh: 'gfDPr', desc_konec: 'gfDK'
   };
   function gfEl(id) { return document.getElementById(id); }
+  var fieldSrc = {}; // zdroj hodnoty pole: 'manual' | 'mindok' | 'zatrolene'
+  var SRC_PRI = { manual: 3, mindok: 2, zatrolene: 1 };
+  function priOf(s) { return SRC_PRI[s] || 0; }
+  function saveFieldSrc() { var e = gfEl('gfFieldSrc'); if (e) e.value = JSON.stringify(fieldSrc); }
   function openGameForm() { if (gameModal) { gameModal.hidden = false; document.body.style.overflow = 'hidden'; } }
   function closeGameForm() { if (gameModal) { gameModal.hidden = true; document.body.style.overflow = ''; } }
   function resetGameForm() {
@@ -227,17 +237,44 @@
     Object.keys(GF).forEach(function (k) { var el = gfEl(GF[k]); if (el) { el.value = ''; el.classList.remove('imp-changed'); } });
     var idEl = gfEl('gfId'); if (idEl) idEl.value = '';
     var t = gfEl('gfTitle'); if (t) t.textContent = 'Nová hra';
+    fieldSrc = {}; saveFieldSrc();
   }
   function fillGameForm(data, highlight) {
     resetGameForm();
     var idEl = gfEl('gfId'); if (idEl) idEl.value = data.id || '';
     var t = gfEl('gfTitle'); if (t) t.textContent = data.id ? 'Upravit hru' : 'Nová hra';
+    fieldSrc = (data.field_src && typeof data.field_src === 'object') ? Object.assign({}, data.field_src) : {};
     Object.keys(GF).forEach(function (k) {
       var el = gfEl(GF[k]);
       if (!el) return;
       var val = data[k] != null ? String(data[k]) : '';
       el.value = val;
       if (highlight && val && k.indexOf('desc_') !== 0) el.classList.add('imp-changed');
+    });
+    saveFieldSrc();
+  }
+  // sloučení importu: přepiš pole jen když má import ≥ prioritu než dosavadní zdroj (ruční > mindok > zatrolené)
+  function mergeImport(data) {
+    var src = data.source === 'mindok' ? 'mindok' : 'zatrolene';
+    Object.keys(GF).forEach(function (k) {
+      var val = data[k];
+      if (val == null || val === '') return;
+      if (priOf(src) >= priOf(fieldSrc[k])) {
+        var el = gfEl(GF[k]);
+        if (el) { el.value = String(val); if (k.indexOf('desc_') !== 0) el.classList.add('imp-changed'); }
+        fieldSrc[k] = src;
+      }
+    });
+    saveFieldSrc();
+  }
+  // ruční změna pole → nejvyšší priorita
+  if (gameModal) {
+    Object.keys(GF).forEach(function (k) {
+      var el = gfEl(GF[k]);
+      if (!el) return;
+      var mark = function () { fieldSrc[k] = 'manual'; el.classList.remove('imp-changed'); saveFieldSrc(); };
+      el.addEventListener('input', mark);
+      el.addEventListener('change', mark);
     });
   }
 
@@ -275,11 +312,10 @@
         .then(function (res) {
           parseBtn.textContent = orig; parseBtn.disabled = false;
           if (!res || !res.success) { alert((res && res.data && res.data.msg) || 'Načtení se nepodařilo.'); return; }
-          // pokud probíhá úprava existující hry (formulář je otevřený), zachovej ID
+          // úprava existující hry = formulář už otevřený (zachovej ID i zdroje); jinak nová hra
           var editing = gameModal && !gameModal.hidden && gfEl('gfId') && gfEl('gfId').value;
-          var keepId = editing ? gfEl('gfId').value : '';
-          fillGameForm(res.data, true);
-          if (keepId) { gfEl('gfId').value = keepId; var gt = gfEl('gfTitle'); if (gt) gt.textContent = 'Upravit hru'; }
+          if (!editing) resetGameForm();
+          mergeImport(res.data);
           if (importModal) importModal.hidden = true;
           openGameForm();
         })

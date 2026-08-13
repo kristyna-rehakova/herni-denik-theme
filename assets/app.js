@@ -211,10 +211,27 @@
     if (t) { e.preventDefault(); var el = document.getElementById(t.dataset.target); if (el) el.hidden = !el.hidden; }
   });
 
-  /* ---------- AUTO-ODESLÁNÍ (Zkontrolováno) ---------- */
+  /* ---------- ZKONTROLOVÁNO (AJAX, bez přenačtení) ---------- */
   document.addEventListener('change', function (e) {
-    var c = e.target.closest('.js-autosubmit');
-    if (c && c.form) c.form.submit();
+    var c = e.target.closest('.js-check-toggle');
+    if (!c || typeof HD === 'undefined') return;
+    var nonceEl = c.form && c.form.querySelector('[name="hd_check_nonce"]');
+    var body = new URLSearchParams();
+    body.set('action', 'hd_toggle_checked');
+    body.set('game', c.dataset.game || '');
+    body.set('nonce', nonceEl ? nonceEl.value : '');
+    body.set('checked', c.checked ? '1' : '');
+    fetch(HD.ajax, { method: 'POST', body: body, credentials: 'same-origin' })
+      .then(function (r) { return r.json(); })
+      .then(function (res) {
+        if (!res || !res.success) return;
+        var h1 = document.querySelector('.detail-info h1');
+        var badge = h1 ? h1.querySelector('.chk') : null;
+        if (res.data.checked) {
+          if (h1 && !badge) h1.insertAdjacentHTML('beforeend', ' <span class="chk" title="Popis zkontrolován">✅</span>');
+        } else if (badge) { badge.remove(); }
+      })
+      .catch(function () {});
   });
 
   /* ---------- FORMULÁŘ HRY (Nová hra / úprava) ---------- */

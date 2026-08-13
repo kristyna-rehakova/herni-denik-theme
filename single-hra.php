@@ -92,7 +92,7 @@ $plays = new WP_Query([
             <input type="hidden" name="action" value="hd_toggle_checked">
             <input type="hidden" name="game_id" value="<?php echo $id; ?>">
             <?php wp_nonce_field('hd_toggle_checked', 'hd_check_nonce'); ?>
-            <label class="check-toggle"><input type="checkbox" name="desc_checked" class="js-autosubmit" value="1" <?php checked($checked); ?>> Zkontrolováno</label>
+            <label class="check-toggle"><input type="checkbox" name="desc_checked" class="js-check-toggle" data-game="<?php echo $id; ?>" value="1" <?php checked($checked); ?>> Zkontrolováno</label>
           </form>
         <?php endif; ?>
       </div>

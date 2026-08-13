@@ -109,3 +109,14 @@ function hd_handle_toggle_checked() {
     exit;
 }
 add_action('admin_post_hd_toggle_checked', 'hd_handle_toggle_checked');
+
+/** AJAX varianta „Zkontrolováno" – bez přenačtení stránky. */
+function hd_ajax_toggle_checked() {
+    $gid = intval($_POST['game'] ?? 0);
+    if (!$gid || get_post_type($gid) !== 'hra' || !current_user_can('edit_post', $gid)) wp_send_json_error();
+    check_ajax_referer('hd_toggle_checked', 'nonce');
+    $val = !empty($_POST['checked']) ? '1' : '';
+    update_post_meta($gid, 'desc_checked', $val);
+    wp_send_json_success(['checked' => $val]);
+}
+add_action('wp_ajax_hd_toggle_checked', 'hd_ajax_toggle_checked');

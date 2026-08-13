@@ -54,9 +54,22 @@ if ($acc === 'm_ok'):
       <input type="hidden" name="action" value="hd_update_account">
       <?php wp_nonce_field('hd_update_account', 'hd_acc_nonce'); ?>
 
+      <?php
+        $my_pid   = hd_current_player_id($u->ID);
+        $cur_nick = $my_pid ? hd_meta($my_pid, 'nick') : '';
+        if ($cur_nick === '') $cur_nick = get_user_meta($u->ID, 'nickname', true);
+      ?>
       <div class="acc-ro">Uživatelské jméno (nelze měnit): <strong><?php echo esc_html($u->user_login); ?></strong></div>
-      <label class="hd-fld">Zobrazované jméno<input type="text" name="display_name" value="<?php echo esc_attr($u->display_name); ?>"></label>
-      <label class="hd-fld">E-mail<input type="email" name="email" value="<?php echo esc_attr($u->user_email); ?>"></label>
+
+      <label class="hd-fld">Přezdívka <span class="hd-hint">(zobrazuje se u tvého hráče)</span><input type="text" name="nickname" value="<?php echo esc_attr($cur_nick); ?>" placeholder="Např. Kikuš"></label>
+
+      <?php if ($is_admin): ?>
+        <label class="hd-fld">Jméno a příjmení<input type="text" name="display_name" value="<?php echo esc_attr($u->display_name); ?>"></label>
+        <label class="hd-fld">E-mail<input type="email" name="email" value="<?php echo esc_attr($u->user_email); ?>"></label>
+      <?php else: ?>
+        <div class="hd-fld">Jméno a příjmení <span class="hd-hint">(mění admin)</span><div class="pf-email-ro"><?php echo esc_html($u->display_name); ?></div></div>
+        <div class="hd-fld">E-mail <span class="hd-hint">(mění admin)</span><div class="pf-email-ro"><?php echo esc_html($u->user_email); ?></div></div>
+      <?php endif; ?>
 
       <h3 class="acc-sub">Změna hesla <span class="hd-hint">(nech prázdné, pokud heslo měnit nechceš)</span></h3>
       <label class="hd-fld">Stávající heslo<input type="password" name="current_pass" autocomplete="current-password"></label>

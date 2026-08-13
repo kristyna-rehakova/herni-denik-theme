@@ -36,20 +36,32 @@ function hd_handle_update_account() {
     $back = hd_ucet_url();
     $user = wp_get_current_user();
 
-    $display = sanitize_text_field(wp_unslash($_POST['display_name'] ?? ''));
-    $email   = sanitize_email(wp_unslash($_POST['email'] ?? ''));
-    $new1    = (string) ($_POST['new_pass'] ?? '');
-    $new2    = (string) ($_POST['new_pass2'] ?? '');
-    $current = (string) ($_POST['current_pass'] ?? '');
+    $nickname = sanitize_text_field(wp_unslash($_POST['nickname'] ?? ''));
+    $display  = sanitize_text_field(wp_unslash($_POST['display_name'] ?? ''));
+    $email    = sanitize_email(wp_unslash($_POST['email'] ?? ''));
+    $new1     = (string) ($_POST['new_pass'] ?? '');
+    $new2     = (string) ($_POST['new_pass2'] ?? '');
+    $current  = (string) ($_POST['current_pass'] ?? '');
+    $is_admin = hd_can_manage();
 
-    // 1) jméno + e-mail
     $upd = ['ID' => $user->ID];
-    if ($display !== '' && $display !== $user->display_name) $upd['display_name'] = $display;
-    if ($email !== '' && $email !== $user->user_email) {
-        if (!is_email($email)) { wp_safe_redirect(add_query_arg('hd_acc', 'bademail', $back)); exit; }
-        $owner = email_exists($email);
-        if ($owner && (int) $owner !== (int) $user->ID) { wp_safe_redirect(add_query_arg('hd_acc', 'emailtaken', $back)); exit; }
-        $upd['user_email'] = $email;
+
+    // 1) přezdívka – smí měnit každý (svoji) a propíše se do jeho hráče
+    if ($nickname !== '') {
+        $upd['nickname'] = $nickname;
+        $pid = hd_current_player_id($user->ID);
+        if ($pid) update_post_meta($pid, 'nick', $nickname);
+    }
+
+    // 2) jméno a příjmení + e-mail – smí měnit jen admin (aby v tom hráči nedělali nepořádek)
+    if ($is_admin) {
+        if ($display !== '' && $display !== $user->display_name) $upd['display_name'] = $display;
+        if ($email !== '' && $email !== $user->user_email) {
+            if (!is_email($email)) { wp_safe_redirect(add_query_arg('hd_acc', 'bademail', $back)); exit; }
+            $owner = email_exists($email);
+            if ($owner && (int) $owner !== (int) $user->ID) { wp_safe_redirect(add_query_arg('hd_acc', 'emailtaken', $back)); exit; }
+            $upd['user_email'] = $email;
+        }
     }
     if (count($upd) > 1) wp_update_user($upd);
 

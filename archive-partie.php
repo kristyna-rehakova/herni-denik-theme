@@ -52,8 +52,12 @@ if (!function_exists('hd_render_play_row')) {
             <?php else: ?>
               <span class="play-name"><?php echo esc_html(hd_format_day(hd_meta($pid, 'play_date'))); ?></span>
             <?php endif; ?>
-            <?php if ($pnames) echo '<div class="pl-line">👥 ' . esc_html(implode(', ', $pnames)) . '</div>'; ?>
-            <?php if ($wnames) echo '<div class="win-line">🏆 ' . esc_html(implode(', ', $wnames)) . '</div>'; ?>
+            <?php if ($players || $ext_players): ?>
+              <div class="pl-line2">
+                <?php foreach ($players as $hp) { $w = in_array($hp, $winners, true); echo '<span class="pl-chip' . ($w ? ' win' : '') . '">' . hd_player_avatar($hp, 26) . '<span class="pl-nm">' . esc_html(hd_player_name($hp)) . ($w ? ' 🏆' : '') . '</span></span>'; } ?>
+                <?php foreach ($ext_players as $en) { $w = in_array($en, $ext_winners, true); echo '<span class="pl-chip' . ($w ? ' win' : '') . '">' . hd_ext_avatar($en, 26) . '<span class="pl-nm">' . esc_html($en) . ($w ? ' 🏆' : '') . '</span></span>'; } ?>
+              </div>
+            <?php endif; ?>
             <?php $pexps = (array) hd_meta($pid, 'play_expansions', []); if ($pexps) echo '<div class="pexp-line">🧩 ' . esc_html(implode(', ', $pexps)) . '</div>'; ?>
             <?php if ($note) echo '<div class="pnote">📝 ' . nl2br(esc_html($note)) . '</div>'; ?>
           </div>

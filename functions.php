@@ -4,7 +4,7 @@
  */
 if (!defined('ABSPATH')) exit;
 
-define('HD_VERSION', '0.20.0');
+define('HD_VERSION', '0.21.0');
 
 function hd_setup() {
     add_theme_support('title-tag');
@@ -23,6 +23,7 @@ add_action('wp_enqueue_scripts', 'hd_assets');
 require get_template_directory() . '/inc/helpers.php';
 require get_template_directory() . '/inc/roles.php';
 require get_template_directory() . '/inc/profile.php';
+require get_template_directory() . '/inc/login.php';
 require get_template_directory() . '/inc/cpt.php';
 require get_template_directory() . '/inc/meta.php';
 require get_template_directory() . '/inc/frontend.php';

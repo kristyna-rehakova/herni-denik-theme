@@ -5,7 +5,7 @@ GitHub Theme URI: https://github.com/kristyna-rehakova/herni-denik-theme
 Update URI: https://github.com/kristyna-rehakova/herni-denik-theme
 Description: Skupinový deník deskových her — sbírka (Herna), odehrané hry (Deník), hráči. Vlastní typy obsahu + přihlášení a role přes WordPress. Nasazení přes GitHub Updater / WP Pusher.
 Author: Herní deník
-Version: 0.20.0
+Version: 0.21.0
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
@@ -346,7 +346,7 @@ main{max-width:1100px;margin:22px auto;padding:0 16px 60px}
 .gs-total{margin-bottom:12px;color:var(--wood-dark)}
 /* nahoru */
 .to-top-row{text-align:right;margin-top:16px}
-#toTop{position:fixed;right:20px;bottom:22px;width:50px;height:50px;border-radius:50%;border:none;background:var(--accent-2);color:#fff;font-size:1.5rem;cursor:pointer;box-shadow:0 4px 14px rgba(50,60,35,.3);z-index:60;display:flex;align-items:center;justify-content:center;transition:.15s}
+#toTop{position:fixed;right:max(16px,calc(50% - 572px));bottom:24px;width:52px;height:52px;border-radius:50%;border:none;background:var(--accent-2);color:#fff;font-size:1.5rem;cursor:pointer;box-shadow:0 4px 14px rgba(50,60,35,.3);z-index:60;display:flex;align-items:center;justify-content:center;transition:.15s}
 #toTop[hidden]{display:none}
 #toTop:hover{filter:brightness(1.08);transform:translateY(-2px)}
 /* deník – pohled podle her */
@@ -389,6 +389,10 @@ main{max-width:1100px;margin:22px auto;padding:0 16px 60px}
 .play-row2 .play-name{font-weight:700;color:var(--wood-dark);text-decoration:none;font-size:1.05rem}
 .play-row2 .pl-line{font-size:.88rem;color:#5b6250;margin-top:2px}
 .play-row2 .win-line{font-size:.88rem;color:var(--accent-2);font-weight:600;margin-top:1px}
+.pl-line2{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:6px}
+.pl-line2 .pl-chip{display:inline-flex;align-items:center;gap:6px;font-size:.95rem;color:#5b6250}
+.pl-line2 .pl-chip.win{font-weight:700;color:var(--accent-2)}
+.pl-line2 .pl-nm{white-space:nowrap}
 .play-row2 .pnote{background:#fbf6e6;border-left:3px solid var(--gold);border-radius:6px;padding:5px 9px;font-size:.85rem;margin-top:4px}
 .play-actions{display:flex;gap:6px;flex:0 0 auto}
 .play-actions .icon-btn{width:40px;height:40px;font-size:1.05rem}

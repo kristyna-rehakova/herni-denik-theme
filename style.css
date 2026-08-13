@@ -5,7 +5,7 @@ GitHub Theme URI: https://github.com/kristyna-rehakova/herni-denik-theme
 Update URI: https://github.com/kristyna-rehakova/herni-denik-theme
 Description: Skupinový deník deskových her — sbírka (Herna), odehrané hry (Deník), hráči. Vlastní typy obsahu + přihlášení a role přes WordPress. Nasazení přes GitHub Updater / WP Pusher.
 Author: Herní deník
-Version: 0.16.0
+Version: 0.16.1
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
@@ -59,11 +59,12 @@ main{max-width:1100px;margin:22px auto;padding:0 16px 60px}
 .cover{position:absolute;inset:0;background-repeat:no-repeat;background-position:center;background-size:cover}
 .thumb-edit{position:absolute;bottom:6px;right:6px;width:28px;height:28px;border:none;border-radius:50%;background:rgba(60,40,20,.6);color:#fff;cursor:pointer;font-size:.8rem;display:flex;align-items:center;justify-content:center;z-index:2}
 .thumb-edit:hover{background:rgba(60,40,20,.85)}
-.fav-btn{position:absolute;top:6px;right:6px;width:30px;height:30px;border:none;border-radius:50%;background:rgba(255,255,255,.85);color:#b9455f;cursor:pointer;font-size:1.05rem;display:flex;align-items:center;justify-content:center;z-index:3;line-height:1;box-shadow:0 1px 4px rgba(0,0,0,.2)}
+.title-row{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.title-row .title-link{min-width:0}
+.fav-btn{border:none;background:none;cursor:pointer;font-size:1.35rem;color:#b9455f;line-height:1;padding:0 2px;flex:0 0 auto}
 .fav-btn.on{color:#e0245e}
-.fav-btn:hover{background:#fff;transform:scale(1.08)}
-.hd-fav-toggle{border:1px solid var(--line);background:#fff;color:var(--muted);border-radius:999px;padding:7px 13px;cursor:pointer;font-size:.85rem;font-weight:600}
-.hd-fav-toggle.active{background:#ffe3ea;border-color:#f3b6c6;color:#c0392b}
+.fav-btn:hover{transform:scale(1.12)}
+.hd-fav-toggle.active{background:#ffe3ea;border:1px solid #f3b6c6;color:#c0392b}
 .game-card .body{padding:12px 14px;display:flex;flex-direction:column;gap:8px;flex:1}
 .game-card h3{font-size:1.1rem}
 .playcount{font-size:.82rem;color:var(--muted)}

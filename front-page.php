@@ -34,10 +34,13 @@ $total = $games->post_count;
   <div class="hd-flash ok">✅ Hra byla uložena.</div>
 <?php endif; ?>
 
-<?php if (current_user_can('edit_posts')): ?>
+<?php if (is_user_logged_in()): ?>
   <div class="topbtns">
-    <button type="button" class="btn big js-open-gameform">♟️ Přidat deskovku</button>
-    <button type="button" class="btn big secondary js-open-import">📋 Import</button>
+    <button type="button" id="hdFavToggle" class="btn big secondary hd-fav-toggle">♥ Moje hry</button>
+    <?php if (current_user_can('edit_posts')): ?>
+      <button type="button" class="btn big js-open-gameform">♟️ Přidat deskovku</button>
+      <button type="button" class="btn big secondary js-open-import">📋 Import</button>
+    <?php endif; ?>
   </div>
 <?php endif; ?>
 
@@ -75,9 +78,6 @@ $total = $games->post_count;
       <span class="item"><span class="lico ic-del">🗑️</span> = smazat hru ze seznamu</span>
     </div>
     <div class="rowtools">
-      <?php if (is_user_logged_in()): ?>
-        <button type="button" id="hdFavToggle" class="hd-fav-toggle">♥ Moje</button>
-      <?php endif; ?>
       <label class="sortlbl">Řadit:
         <select id="hdSort">
           <option value="name">abecedně</option>

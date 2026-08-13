@@ -13,7 +13,9 @@ function hd_players_label($id) {
     $mn = hd_meta($id, 'players_min');
     $mx = hd_meta($id, 'players_max');
     if ($mn && $mx) return ($mn == $mx) ? $mn : "$mn–$mx";
-    return $mn ? "$mn+" : '';
+    if ($mn) return "$mn+";
+    if ($mx) return (string) $mx;
+    return '';
 }
 
 function hd_time_label($id) {

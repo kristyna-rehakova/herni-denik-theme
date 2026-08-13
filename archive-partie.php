@@ -133,7 +133,7 @@ if (!function_exists('hd_render_play_row')) {
         });
     }
     foreach ($by_day as $day => $pids): ?>
-      <section class="day">
+      <section class="day day-card">
         <h2 class="day-head"><?php echo esc_html(hd_format_day($day)); ?> <span class="day-count"><?php echo count($pids); ?>×</span></h2>
         <?php foreach ($pids as $pid) hd_render_play_row($pid, true, true); ?>
       </section>

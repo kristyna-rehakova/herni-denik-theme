@@ -97,6 +97,7 @@ $total = $games->post_count;
         get_template_part('template-parts/game-card');
     endwhile; wp_reset_postdata(); ?>
   </div>
+  <p class="to-top-row"><button type="button" class="btn ghost js-scrolltop">↑ Nahoru</button></p>
 <?php else: ?>
   <div class="empty card" style="padding:50px 20px">📚 Sbírka je zatím prázdná. Přidej první hru!</div>
 <?php endif; ?>

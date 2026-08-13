@@ -5,7 +5,7 @@ GitHub Theme URI: https://github.com/kristyna-rehakova/herni-denik-theme
 Update URI: https://github.com/kristyna-rehakova/herni-denik-theme
 Description: Skupinový deník deskových her — sbírka (Herna), odehrané hry (Deník), hráči. Vlastní typy obsahu + přihlášení a role přes WordPress. Nasazení přes GitHub Updater / WP Pusher.
 Author: Herní deník
-Version: 0.19.0
+Version: 0.20.0
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
@@ -344,11 +344,21 @@ main{max-width:1100px;margin:22px auto;padding:0 16px 60px}
 .me-tag{font-size:.72rem;background:#d6ecfa;color:#2b6a9c;border-radius:999px;padding:2px 8px;font-weight:700;align-self:center;white-space:nowrap}
 .pf-email-ro{padding:8px 11px;border:1px solid var(--line);border-radius:10px;background:#f4f4f0;color:var(--muted);font-weight:400}
 .gs-total{margin-bottom:12px;color:var(--wood-dark)}
+/* nahoru */
+.to-top-row{text-align:right;margin-top:16px}
+#toTop{position:fixed;right:20px;bottom:22px;width:50px;height:50px;border-radius:50%;border:none;background:var(--accent-2);color:#fff;font-size:1.5rem;cursor:pointer;box-shadow:0 4px 14px rgba(50,60,35,.3);z-index:60;display:flex;align-items:center;justify-content:center;transition:.15s}
+#toTop[hidden]{display:none}
+#toTop:hover{filter:brightness(1.08);transform:translateY(-2px)}
 /* deník – pohled podle her */
 .gg-head{display:flex;align-items:center;gap:12px;padding:6px 4px 8px;border-bottom:2px solid var(--line);margin-bottom:8px}
 .gg-thumb{position:relative;width:46px;height:46px;flex:0 0 auto;border-radius:9px;overflow:hidden;background:#e6ecd6;display:flex;align-items:center;justify-content:center;font-size:1.4rem;text-decoration:none}
 .gg-name{flex:1;font-family:Georgia,serif;font-weight:700;color:var(--wood-dark);font-size:1.12rem;text-decoration:none;min-width:0}
 .gg-head .day-count{flex:0 0 auto}
+/* varianta A – den = bílá karta, partie jako řádky uvnitř */
+.day-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:12px 16px 6px}
+.day-card .day-head{border-bottom:2px solid var(--line);margin-bottom:8px}
+.day-card .play-row2{background:none;border:none;box-shadow:none;border-radius:0;border-bottom:1px solid var(--line);margin-bottom:0;padding:10px 2px}
+.day-card .play-row2:last-child{border-bottom:none}
 .game-plays-list .play-row2.pl-extra{display:none}
 .more-plays{text-align:right;margin-top:4px}
 .hd-plays-body{max-height:62vh;overflow:auto}

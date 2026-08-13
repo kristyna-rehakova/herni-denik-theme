@@ -7,8 +7,6 @@ if (!defined('ABSPATH')) exit;
 get_header();
 $s = hd_compute_stats();
 ?>
-<h1 class="page-title">📊 Statistiky</h1>
-
 <?php $me = hd_current_player_id(); ?>
 <?php if (!$me && is_user_logged_in()): ?>
   <div class="myplayer-form">Chceš vidět svoje statistiky? Přiřaď svůj účet k hráči – v sekci <strong>👥 Hráči</strong> vyplň u svého hráče <strong>e-mail</strong> shodný s tvým účtem.</div>

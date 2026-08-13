@@ -88,8 +88,6 @@ if (!function_exists('hd_render_play_row')) {
   <p><button type="button" class="btn big js-open-play">🎲 Zapsat do Deníku</button></p>
 <?php endif; ?>
 
-<h1 class="page-title">📖 Odehrané hry</h1>
-
 <?php if ($all_pids): ?>
   <div class="denik-top">
     <div class="grp-switch">

@@ -14,8 +14,6 @@ $can_manage = hd_can_manage();       // upravit / smazat jen admin
   <div class="hd-flash ok"><?php echo $_GET['hd_pl'] === 'del' ? '🗑️ Hráč byl přesunut do koše.' : '✅ Hráč byl uložen.'; ?></div>
 <?php endif; ?>
 
-<h1 class="page-title">👥 Hráči</h1>
-
 <?php if ($can_add): ?>
   <p><button type="button" class="btn big js-open-player">➕ Přidat hráče</button></p>
 <?php endif; ?>

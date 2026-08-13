@@ -59,7 +59,9 @@ function hd_player_modal() {
           <div class="pf-preview"><span class="avatar" id="pfAvatar" style="width:56px;height:56px;font-size:24px;background:#eeb088">?</span></div>
           <label class="hd-fld">Přezdívka<input type="text" name="nick" id="pfNick" placeholder="Např. Kikuš"></label>
           <label class="hd-fld">Jméno a příjmení<input type="text" name="name" id="pfName" required></label>
-          <label class="hd-fld">E-mail <span class="hd-hint">(nepovinné – spáruje hráče s jeho účtem)</span><input type="email" name="email" id="pfEmail" placeholder="jmeno@email.cz"></label>
+          <?php if (hd_can_manage()): ?>
+            <label class="hd-fld">E-mail <span class="hd-hint">(nepovinné – spáruje hráče s jeho účtem)</span><input type="email" name="email" id="pfEmail" placeholder="jmeno@email.cz"></label>
+          <?php endif; ?>
           <label class="hd-fld">Barva
             <span class="pf-colors">
               <input type="color" name="color" id="pfColor" value="#eeb088">
@@ -106,7 +108,7 @@ function hd_handle_save_player() {
     update_post_meta($pid, 'nick', sanitize_text_field(wp_unslash($_POST['nick'] ?? '')));
     update_post_meta($pid, 'color', sanitize_hex_color(wp_unslash($_POST['color'] ?? '')) ?: '#eeb088');
     update_post_meta($pid, 'emoji', sanitize_text_field(wp_unslash($_POST['emoji'] ?? '')));
-    update_post_meta($pid, 'email', sanitize_email(wp_unslash($_POST['email'] ?? '')));
+    if (hd_can_manage() && isset($_POST['email'])) update_post_meta($pid, 'email', sanitize_email(wp_unslash($_POST['email'])));
 
     wp_safe_redirect(add_query_arg('hd_pl', 'ok', $back));
     exit;

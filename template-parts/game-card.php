@@ -31,12 +31,7 @@ $t_for_filter = hd_meta($id, 'time_max') ?: hd_meta($id, 'time_min');
     <?php endif; ?>
   </div>
   <div class="body">
-    <div class="title-row">
-      <a class="title-link" href="<?php the_permalink(); ?>"><h3><?php the_title(); ?><?php if ($checked) echo ' <span class="chk" title="Popis zkontrolován">✅</span>'; ?></h3></a>
-      <?php if (is_user_logged_in()): ?>
-        <button type="button" class="fav-btn js-fav <?php echo hd_is_fav($id) ? 'on' : ''; ?>" data-game="<?php echo $id; ?>" title="Moje hry"><?php echo hd_is_fav($id) ? '♥' : '♡'; ?></button>
-      <?php endif; ?>
-    </div>
+    <a class="title-link" href="<?php the_permalink(); ?>"><h3><?php the_title(); ?><?php if ($checked) echo ' <span class="chk" title="Popis zkontrolován">✅</span>'; ?></h3></a>
     <div class="meta">
       <?php if ($pl) echo '<span class="pill plpill">👥 ' . esc_html($pl) . '</span>'; ?>
       <?php if ($tl) echo '<span class="pill plpill">⏱ ' . esc_html($tl) . '</span>'; ?>
@@ -47,6 +42,7 @@ $t_for_filter = hd_meta($id, 'time_max') ?: hd_meta($id, 'time_min');
     <div class="playcount"><?php echo $plays ? 'Odehráno ' . (int)$plays . '×' : 'Zatím nehráno'; ?><?php if (hd_can_manage() && hd_has_pending($id)) echo ' <span class="pending-badge">✎ návrh</span>'; ?></div>
     <?php if (is_user_logged_in()): ?>
       <div class="card-actions">
+        <button type="button" class="icon-btn ic-fav js-fav <?php echo hd_is_fav($id) ? 'on' : ''; ?>" data-game="<?php echo $id; ?>" title="Moje hry"><?php echo hd_is_fav($id) ? '♥' : '♡'; ?></button>
         <button type="button" class="icon-btn ic-play js-open-play" data-game="<?php echo $id; ?>" title="Zapsat do Deníku">🎲</button>
         <?php if (current_user_can('edit_post', $id)): ?>
           <button type="button" class="icon-btn ic-edit js-edit-game" data-hd="<?php echo hd_game_edit_json($id); ?>" title="Editovat info o hře">✏️</button>

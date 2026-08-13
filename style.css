@@ -5,7 +5,7 @@ GitHub Theme URI: https://github.com/kristyna-rehakova/herni-denik-theme
 Update URI: https://github.com/kristyna-rehakova/herni-denik-theme
 Description: Skupinový deník deskových her — sbírka (Herna), odehrané hry (Deník), hráči. Vlastní typy obsahu + přihlášení a role přes WordPress. Nasazení přes GitHub Updater / WP Pusher.
 Author: Herní deník
-Version: 0.18.0
+Version: 0.18.1
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
@@ -31,11 +31,11 @@ img{max-width:100%;height:auto}
 /* hlavička – zlatavý motiv jako v původním návrhu */
 .site-header{background:linear-gradient(135deg,#FFC125,#F0A400);color:#5a4712;box-shadow:0 3px 14px rgba(180,130,0,.22);position:sticky;top:0;z-index:20;padding:22px 0}
 .site-header .wrap{max-width:1100px;margin:0 auto;padding:0 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.site-header h1,.site-header a.brand{color:#5a4712;font-family:'Fredoka',"Segoe UI",system-ui,sans-serif;font-size:2.1rem;font-weight:600;text-decoration:none;display:flex;align-items:center;gap:12px;letter-spacing:.3px}
+.site-header h1,.site-header a.brand{color:#5a4712;font-family:'Baloo 2',"Segoe UI",system-ui,sans-serif;font-size:2.1rem;font-weight:600;text-decoration:none;display:flex;align-items:center;gap:12px;letter-spacing:.3px}
 .site-header .spacer{flex:1}
 .nav-wrap{max-width:1100px;margin:16px auto 0;padding:0 16px}
 .nav{display:flex;gap:10px;flex-wrap:wrap;list-style:none;margin:0;padding:0}
-.nav a{background:rgba(255,255,255,.5);color:#5a4712;border:1px solid rgba(120,90,0,.15);padding:14px 26px;border-radius:12px;text-decoration:none;font-size:1.25rem;font-weight:600;transition:.15s}
+.nav a{background:rgba(255,255,255,.5);color:#5a4712;border:1px solid rgba(120,90,0,.15);padding:12px 26px;border-radius:12px;text-decoration:none;font-size:1.45rem;font-weight:600;transition:.15s}
 .nav a:hover{background:rgba(255,255,255,.72)}
 .nav .current-menu-item a,.nav .current_page_item a{background:#fff;color:#7a5c10;border-color:#fff;font-weight:700}
 .site-header .userbox{font-size:.85rem;color:#5a4712}
@@ -73,11 +73,12 @@ main{max-width:1100px;margin:22px auto;padding:0 16px 60px}
 .card-actions{display:flex;gap:8px;margin-top:auto;padding-top:6px}
 .icon-btn{border:none;border-radius:11px;cursor:pointer;font-size:1.2rem;height:44px;display:inline-flex;align-items:center;justify-content:center;color:#3f4536;text-decoration:none;transition:.15s;line-height:1}
 .icon-btn:hover{filter:brightness(1.05);transform:translateY(-1px)}
-.card-actions .icon-btn{flex:2 1 0}
-.card-actions .ic-del{flex:1 1 0}
+.card-actions .icon-btn{flex:1 1 0}
 .ic-play{background:#FFDAB9}
 .ic-edit{background:#ADD8E6}
 .ic-del{background:#9a958c}
+.ic-fav{background:#f6d0da;color:#c0396a;font-size:1.35rem}
+.ic-fav.on{color:#e0245e}
 
 /* horní velká tlačítka */
 .topbtns{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
@@ -350,7 +351,8 @@ main{max-width:1100px;margin:22px auto;padding:0 16px 60px}
 .hd-plays-body .play-row2{margin-bottom:8px}
 /* osobní statistiky */
 .my-stats{margin-bottom:26px}
-.my-stats h2{margin-bottom:12px}
+.my-stats h2{margin-bottom:14px;font-size:1.75rem}
+.overall-title{font-size:1.75rem}
 .my-stats .stat-box{margin-top:14px}
 .my-stats .stat-box h3{margin-bottom:10px}
 .overall-title{margin:8px 0 14px}

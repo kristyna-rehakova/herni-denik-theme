@@ -4,7 +4,7 @@
  */
 if (!defined('ABSPATH')) exit;
 
-define('HD_VERSION', '0.18.0');
+define('HD_VERSION', '0.18.1');
 
 function hd_setup() {
     add_theme_support('title-tag');
@@ -15,7 +15,7 @@ function hd_setup() {
 add_action('after_setup_theme', 'hd_setup');
 
 function hd_assets() {
-    wp_enqueue_style('hd-fonts', 'https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&display=swap', [], null);
+    wp_enqueue_style('hd-fonts', 'https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&display=swap', [], null);
     wp_enqueue_style('herni-denik', get_stylesheet_uri(), ['hd-fonts'], HD_VERSION);
 }
 add_action('wp_enqueue_scripts', 'hd_assets');

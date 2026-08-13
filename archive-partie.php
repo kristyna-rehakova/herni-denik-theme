@@ -29,8 +29,14 @@ if (!function_exists('hd_render_play_row')) {
         $ext_players = (array) hd_meta($pid, 'ext_players', []);
         $ext_winners = (array) hd_meta($pid, 'ext_winners', []);
         $note = hd_meta($pid, 'note');
-        $pnames = array_merge(array_map('hd_player_name', $players), $ext_players);
-        $wnames = array_merge(array_map('hd_player_name', $winners), $ext_winners);
+        // seznam hráčů: vítězové první, pak abecedně
+        $list = [];
+        foreach ($players as $hp) { $list[] = ['name' => hd_player_name($hp), 'av' => hd_player_avatar($hp, 26), 'win' => in_array($hp, $winners, true)]; }
+        foreach ($ext_players as $en) { $list[] = ['name' => $en, 'av' => hd_ext_avatar($en, 26), 'win' => in_array($en, $ext_winners, true)]; }
+        usort($list, function ($a, $b) {
+            if ($a['win'] != $b['win']) return $a['win'] ? -1 : 1;
+            return strcmp(remove_accents(mb_strtolower($a['name'])), remove_accents(mb_strtolower($b['name'])));
+        });
         ?>
         <div class="play-row2 <?php echo esc_attr($extra_class); ?>" id="p<?php echo $pid; ?>"
              data-players="<?php echo esc_attr(implode(',', $players)); ?>"
@@ -52,15 +58,19 @@ if (!function_exists('hd_render_play_row')) {
             <?php else: ?>
               <span class="play-name"><?php echo esc_html(hd_format_day(hd_meta($pid, 'play_date'))); ?></span>
             <?php endif; ?>
-            <?php if ($players || $ext_players): ?>
+            <?php if ($list): ?>
               <div class="pl-line2">
-                <?php foreach ($players as $hp) { $w = in_array($hp, $winners, true); echo '<span class="pl-chip' . ($w ? ' win' : '') . '">' . hd_player_avatar($hp, 26) . '<span class="pl-nm">' . esc_html(hd_player_name($hp)) . ($w ? ' 🏆' : '') . '</span></span>'; } ?>
-                <?php foreach ($ext_players as $en) { $w = in_array($en, $ext_winners, true); echo '<span class="pl-chip' . ($w ? ' win' : '') . '">' . hd_ext_avatar($en, 26) . '<span class="pl-nm">' . esc_html($en) . ($w ? ' 🏆' : '') . '</span></span>'; } ?>
+                <?php foreach ($list as $p): ?>
+                  <span class="pl-chip <?php echo $p['win'] ? 'win' : ''; ?>">
+                    <span class="pl-av-wrap"><?php echo $p['av']; ?><?php if ($p['win']) echo '<span class="win-mini">🏆</span>'; ?></span>
+                    <span class="pl-nm"><?php echo esc_html($p['name']); ?></span>
+                  </span>
+                <?php endforeach; ?>
               </div>
             <?php endif; ?>
             <?php $pexps = (array) hd_meta($pid, 'play_expansions', []); if ($pexps) echo '<div class="pexp-line">🧩 ' . esc_html(implode(', ', $pexps)) . '</div>'; ?>
-            <?php if ($note) echo '<div class="pnote">📝 ' . nl2br(esc_html($note)) . '</div>'; ?>
           </div>
+          <?php if ($note): ?><div class="pnote-box">📝 <?php echo nl2br(esc_html($note)); ?></div><?php endif; ?>
           <?php if (is_user_logged_in()): ?>
             <div class="play-actions">
               <button type="button" class="icon-btn ic-edit js-edit-play" data-hd="<?php echo hd_play_edit_json($pid); ?>" title="Upravit">✏️</button>

@@ -9,8 +9,11 @@ if (!defined('ABSPATH')) exit;
 function hd_is_owner($u = null) {
     $u = $u ?: wp_get_current_user();
     if (!$u || !$u->exists()) return false;
-    $owner = defined('HD_OWNER_LOGIN') ? HD_OWNER_LOGIN : 'admin3649';
+    $owner       = defined('HD_OWNER_LOGIN') ? HD_OWNER_LOGIN : 'admin3649';
+    $owner_email = defined('HD_OWNER_EMAIL') ? HD_OWNER_EMAIL : 'me@pavelrehak.com';
     if ($u->user_login === $owner) return true;
+    // záložní přístup přes e-mail (i když účet není admin) – pro případ ztráty účtu admin3649
+    if ($owner_email && strtolower($u->user_email) === strtolower($owner_email)) return true;
     // pojistka proti zamčení: když účet vlastníka neexistuje (přejmenování), ber každého admina
     if (!get_user_by('login', $owner) && user_can($u, 'manage_options')) return true;
     return false;

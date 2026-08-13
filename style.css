@@ -5,7 +5,7 @@ GitHub Theme URI: https://github.com/kristyna-rehakova/herni-denik-theme
 Update URI: https://github.com/kristyna-rehakova/herni-denik-theme
 Description: Skupinový deník deskových her — sbírka (Herna), odehrané hry (Deník), hráči. Vlastní typy obsahu + přihlášení a role přes WordPress. Nasazení přes GitHub Updater / WP Pusher.
 Author: Herní deník
-Version: 0.22.0
+Version: 0.22.1
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
@@ -393,6 +393,9 @@ main{max-width:1100px;margin:22px auto;padding:0 16px 60px}
 .pl-line2 .pl-chip{display:inline-flex;align-items:center;gap:6px;font-size:.95rem;color:#5b6250}
 .pl-line2 .pl-chip.win{font-weight:700;color:var(--accent-2)}
 .pl-line2 .pl-nm{white-space:nowrap}
+.pl-av-wrap{position:relative;display:inline-flex;flex:0 0 auto}
+.win-mini{position:absolute;top:-6px;right:-7px;font-size:.72rem;line-height:1}
+.pnote-box{align-self:center;flex:0 0 auto;max-width:230px;background:#fbf6e6;border:1px solid var(--gold);border-radius:10px;padding:8px 11px;font-size:.85rem;color:#6b5b3a}
 .play-row2 .pnote{background:#fbf6e6;border-left:3px solid var(--gold);border-radius:6px;padding:5px 9px;font-size:.85rem;margin-top:4px}
 .play-actions{display:flex;gap:6px;flex:0 0 auto}
 .play-actions .icon-btn{width:40px;height:40px;font-size:1.05rem}

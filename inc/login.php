@@ -43,6 +43,8 @@ add_action('login_enqueue_scripts', function () {
       .login #login_error{border-left-color:#c05f49;border-radius:10px}
       .login form .forgetmenot label{font-weight:400}
       .login .privacy-policy-page-link{margin-top:14px}
+      /* pryč přepínač jazyka a odkaz Zpět (web je jen pro přihlášené) */
+      .login .language-switcher,.login #backtoblog{display:none}
     </style>
     <?php
 });

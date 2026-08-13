@@ -129,7 +129,7 @@ function hd_resolve_zatrolene_cover($url) {
 
 /* ---------------- modální okno importu (krok 1: vložení obsahu) ---------------- */
 function hd_import_modal() {
-    if (!current_user_can('edit_posts') || !(is_front_page() || is_singular('hra'))) return;
+    if (!is_user_logged_in() || !(is_front_page() || is_singular('hra'))) return;
     ?>
     <div class="hd-modal" id="hdImportModal" hidden>
       <div class="hd-modal-bg js-close-import"></div>
@@ -163,7 +163,7 @@ add_action('wp_footer', 'hd_import_modal');
 
 /* ---------------- AJAX: rozparsuj vložený obsah a vrať data pro formulář ---------------- */
 function hd_ajax_import_parse() {
-    if (!current_user_can('edit_posts')) wp_send_json_error(['msg' => 'Nemáš oprávnění.'], 403);
+    if (!is_user_logged_in()) wp_send_json_error(['msg' => 'Nemáš oprávnění.'], 403);
     check_ajax_referer('hd_import_parse', 'nonce');
     $text = wp_unslash($_POST['content'] ?? '');
     $url  = trim(wp_unslash($_POST['url'] ?? ''));

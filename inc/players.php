@@ -41,7 +41,7 @@ function hd_player_edit_json($id) {
 
 /** Modal formuláře hráče (na stránce Hráči, jen pro editory). */
 function hd_player_modal() {
-    if (!current_user_can('edit_posts')) return;
+    if (!is_user_logged_in()) return;
     if (!is_page((int) get_option('hd_hraci_page_id'))) return;
     $swatches = ['#eeb088','#cb1515','#e8873b','#e0b400','#5e8b6e','#3f9a52','#3a86c8','#5b6cc9','#9b5bc9','#c95b9e','#8a6d3b','#607d8b'];
     $emojis = ['🦉','🐺','🦊','🐻','🐼','🐸','🦁','🐯','🐨','🐰','🐧','🦄','🐲','🌟','🎲','🍀','🔥','⚡','🎯','👑'];
@@ -86,7 +86,7 @@ add_action('wp_footer', 'hd_player_modal');
 
 /** Uložení hráče. */
 function hd_handle_save_player() {
-    if (!current_user_can('edit_posts')) wp_die('Nemáš oprávnění.');
+    if (!is_user_logged_in()) wp_die('Musíš být přihlášen.');
     if (empty($_POST['hd_player_nonce']) || !wp_verify_nonce($_POST['hd_player_nonce'], 'hd_save_player')) wp_die('Neplatný požadavek.');
     $back = hd_hraci_url();
     $pid  = intval($_POST['player_id'] ?? 0);
@@ -94,7 +94,7 @@ function hd_handle_save_player() {
     if ($name === '') { wp_safe_redirect($back); exit; }
 
     if ($pid && get_post_type($pid) === 'hrac') {
-        if (!current_user_can('edit_post', $pid)) wp_die('Nemáš oprávnění.');
+        if (!hd_can_manage()) wp_die('Úpravu hráče může provést jen admin.');
         wp_update_post(['ID' => $pid, 'post_title' => $name]);
     } else {
         $pid = wp_insert_post(['post_type' => 'hrac', 'post_status' => 'publish', 'post_title' => $name]);
@@ -114,7 +114,7 @@ add_action('admin_post_hd_save_player', 'hd_handle_save_player');
 function hd_handle_delete_player() {
     $id = intval($_GET['id'] ?? 0);
     if (!$id || get_post_type($id) !== 'hrac') wp_die('Neplatný hráč.');
-    if (!current_user_can('delete_post', $id)) wp_die('Nemáš oprávnění.');
+    if (!hd_can_manage()) wp_die('Mazat hráče může jen admin.');
     check_admin_referer('hd_delplayer_' . $id);
     wp_trash_post($id);
     wp_safe_redirect(add_query_arg('hd_pl', 'del', hd_hraci_url()));

@@ -24,7 +24,8 @@ $parts = [
     'konec'    => 'Konec hry',
     'bodovani' => 'Bodování',
 ];
-$can = current_user_can('edit_post', $id);
+$can = hd_can_manage();          // plná editace obsahu = jen admin
+$is_member = hd_is_member();      // člen může navrhnout úpravu hry
 
 // partie k této hře
 $plays = new WP_Query([
@@ -43,7 +44,18 @@ $plays = new WP_Query([
 <?php if (isset($_GET['hd_saved']) && $_GET['hd_saved'] === 'ok'): ?>
   <div class="hd-flash ok">✅ Hra byla uložena.</div>
 <?php endif; ?>
+<?php if (isset($_GET['hd_edit'])): ?>
+  <?php if ($_GET['hd_edit'] === 'suggested'): ?>
+    <div class="hd-flash ok">✎ Návrh úpravy byl odeslán ke schválení. Díky!</div>
+  <?php elseif ($_GET['hd_edit'] === 'approved'): ?>
+    <div class="hd-flash ok">✓ Návrh byl schválen a zapsán.</div>
+  <?php elseif ($_GET['hd_edit'] === 'rejected'): ?>
+    <div class="hd-flash ok">Návrh byl zamítnut.</div>
+  <?php endif; ?>
+<?php endif; ?>
 <p><a class="btn back" href="<?php echo esc_url(home_url('/')); ?>">← Zpět do Herny</a></p>
+
+<?php hd_pending_banner($id); ?>
 
 <article class="detail">
   <div class="detail-head">
@@ -72,8 +84,13 @@ $plays = new WP_Query([
           <button type="button" class="btn big js-open-play" data-game="<?php echo $id; ?>">🎲 Zapsat partii</button>
           <?php if ($can): ?>
             <button type="button" class="btn big ghost js-edit-game" data-hd="<?php echo hd_game_edit_json($id); ?>">✏️ Upravit info</button>
+          <?php elseif ($is_member): ?>
+            <button type="button" class="btn big ghost js-edit-game" data-hd="<?php echo hd_game_edit_json($id); ?>">✏️ Navrhnout úpravu</button>
           <?php endif; ?>
         </p>
+        <?php if ($is_member && hd_has_pending($id)): ?>
+          <div class="notes">✎ Tvůj návrh úpravy čeká na schválení adminem.</div>
+        <?php endif; ?>
       <?php endif; ?>
     </div>
   </div>

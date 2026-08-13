@@ -5,7 +5,7 @@
 if (!defined('ABSPATH')) exit;
 
 function hd_game_form_modal() {
-    if (!current_user_can('edit_posts')) return;
+    if (!is_user_logged_in()) return;
     if (!(is_front_page() || is_singular('hra'))) return;
     ?>
     <div class="hd-modal" id="hdGameModal" hidden>
@@ -60,51 +60,29 @@ add_action('wp_footer', 'hd_game_form_modal');
 
 /** Uložení hry z front-end formuláře (nová i úprava). */
 function hd_handle_save_game() {
-    if (!current_user_can('edit_posts')) wp_die('Na uložení hry nemáš oprávnění.');
+    if (!is_user_logged_in()) wp_die('Na uložení hry musíš být přihlášen.');
     if (empty($_POST['hd_game_nonce']) || !wp_verify_nonce($_POST['hd_game_nonce'], 'hd_save_game')) wp_die('Neplatný požadavek.');
 
     $gid  = intval($_POST['game_id'] ?? 0);
     $name = sanitize_text_field(wp_unslash($_POST['name'] ?? ''));
     if ($name === '') { wp_safe_redirect(wp_get_referer() ?: home_url('/')); exit; }
 
+    // ČLEN: úprava existující hry = návrh ke schválení (nová hra jen pro admina)
+    if (hd_is_member()) {
+        if (!$gid || get_post_type($gid) !== 'hra') { wp_safe_redirect(home_url('/')); exit; }
+        hd_store_pending($gid, $_POST);
+        wp_safe_redirect(add_query_arg('hd_edit', 'suggested', get_permalink($gid))); exit;
+    }
+
+    // ADMIN: uloží se rovnou
+    if (!hd_can_manage()) wp_die('Nemáš oprávnění.');
     if ($gid && get_post_type($gid) === 'hra') {
-        if (!current_user_can('edit_post', $gid)) wp_die('Nemáš oprávnění.');
         wp_update_post(['ID' => $gid, 'post_title' => $name]);
     } else {
         $gid = wp_insert_post(['post_type' => 'hra', 'post_status' => 'publish', 'post_title' => $name, 'post_author' => get_current_user_id()]);
     }
     if (is_wp_error($gid) || !$gid) { wp_safe_redirect(home_url('/')); exit; }
-
-    // jednoduchá textová pole
-    foreach (['players_min','players_max','time_min','time_max','year','publisher','bgg_url','pub_url','difficulty'] as $k) {
-        if (isset($_POST[$k])) update_post_meta($gid, $k, sanitize_text_field(wp_unslash($_POST[$k])));
-    }
-    // víceřádková
-    foreach (['notes','desc_priprava','desc_prubeh','desc_konec'] as $k) {
-        if (isset($_POST[$k])) update_post_meta($gid, $k, sanitize_textarea_field(wp_unslash($_POST[$k])));
-    }
-    // zdroje polí (kvůli prioritě importu: ruční > mindok > zatrolené)
-    $fs = json_decode(wp_unslash($_POST['field_src'] ?? '[]'), true);
-    if (is_array($fs)) {
-        $clean = [];
-        foreach ($fs as $k => $v) { if (in_array($v, ['manual','mindok','zatrolene'], true)) $clean[sanitize_key($k)] = $v; }
-        update_post_meta($gid, 'field_src', $clean);
-    }
-
-    // obrázek: z pole „URL obrázku"; když prázdné a hra nemá obálku, zkus dohledat ze Zatrolených podle odkazu
-    $img = trim(wp_unslash($_POST['image_url'] ?? ''));
-    if (!$img && !has_post_thumbnail($gid)) {
-        $bgg = trim(wp_unslash($_POST['bgg_url'] ?? ''));
-        if ($bgg && function_exists('hd_resolve_zatrolene_cover')) $img = hd_resolve_zatrolene_cover($bgg);
-    }
-    if ($img && !has_post_thumbnail($gid)) {
-        require_once ABSPATH . 'wp-admin/includes/media.php';
-        require_once ABSPATH . 'wp-admin/includes/file.php';
-        require_once ABSPATH . 'wp-admin/includes/image.php';
-        $att = media_sideload_image(esc_url_raw($img), $gid, null, 'id');
-        if (!is_wp_error($att)) set_post_thumbnail($gid, $att);
-    }
-
+    hd_apply_game_fields($gid, $_POST);
     wp_safe_redirect(add_query_arg('hd_saved', 'ok', get_permalink($gid)));
     exit;
 }

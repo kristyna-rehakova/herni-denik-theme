@@ -5,7 +5,7 @@ GitHub Theme URI: https://github.com/kristyna-rehakova/herni-denik-theme
 Update URI: https://github.com/kristyna-rehakova/herni-denik-theme
 Description: Skupinový deník deskových her — sbírka (Herna), odehrané hry (Deník), hráči. Vlastní typy obsahu + přihlášení a role přes WordPress. Nasazení přes GitHub Updater / WP Pusher.
 Author: Herní deník
-Version: 0.14.1
+Version: 0.15.0
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
@@ -311,6 +311,16 @@ main{max-width:1100px;margin:22px auto;padding:0 16px 60px}
 .check-form{margin:0}
 .check-toggle{display:inline-flex;align-items:center;gap:6px;font-size:.85rem;color:var(--muted);font-weight:600;cursor:pointer;background:#fff;border:1px solid var(--line);border-radius:999px;padding:5px 12px}
 .check-toggle input{cursor:pointer}
+/* návrh úpravy (schvalování) */
+.pending-box{background:#fbf6e6;border:1px solid var(--gold);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px 16px;margin-bottom:16px}
+.pending-head{font-weight:700;color:var(--wood-dark);margin-bottom:8px}
+.pending-diff{width:100%;border-collapse:collapse;font-size:.9rem;margin-bottom:12px}
+.pending-diff th,.pending-diff td{text-align:left;padding:5px 8px;border-bottom:1px solid #ecdfbf;vertical-align:top}
+.pending-diff thead th{color:var(--muted);font-size:.78rem;text-transform:uppercase;letter-spacing:.03em}
+.pending-diff td.old{color:#a5673a;text-decoration:line-through;opacity:.75}
+.pending-diff td.new{color:#2e7d32;font-weight:600}
+.pending-actions{display:flex;gap:10px;flex-wrap:wrap}
+.pending-badge{display:inline-block;font-size:.72rem;font-weight:700;color:#fff;background:#c9962a;border-radius:999px;padding:2px 8px;margin-top:2px}
 .desc-part div{white-space:pre-wrap;line-height:1.5}
 .video-embed{position:relative;max-width:720px;aspect-ratio:16/9}
 .video-embed iframe{position:absolute;inset:0;width:100%;height:100%;border-radius:12px}

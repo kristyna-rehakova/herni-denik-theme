@@ -38,7 +38,7 @@ $t_for_filter = hd_meta($id, 'time_max') ?: hd_meta($id, 'time_min');
       <?php if ($pub) echo '<span class="pill">' . esc_html($pub) . '</span>'; ?>
       <?php if ($year) echo '<span class="pill">' . esc_html($year) . '</span>'; ?>
     </div>
-    <div class="playcount"><?php echo $plays ? 'Odehráno ' . (int)$plays . '×' : 'Zatím nehráno'; ?></div>
+    <div class="playcount"><?php echo $plays ? 'Odehráno ' . (int)$plays . '×' : 'Zatím nehráno'; ?><?php if (hd_can_manage() && hd_has_pending($id)) echo ' <span class="pending-badge">✎ návrh</span>'; ?></div>
     <?php if (is_user_logged_in()): ?>
       <div class="card-actions">
         <button type="button" class="icon-btn ic-play js-open-play" data-game="<?php echo $id; ?>" title="Zapsat do Deníku">🎲</button>

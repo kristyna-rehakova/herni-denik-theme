@@ -197,7 +197,7 @@ $plays = new WP_Query([
           <span class="pdate"><?php echo esc_html(hd_format_date($pdate)); ?></span>
           <span class="pplayers">
             <?php foreach ($players as $hp) { $w = in_array((string)$hp, $winners, true); echo '<span class="pl-chip' . ($w ? ' win' : '') . '" title="' . esc_attr(hd_player_name($hp)) . ($w ? ' 🏆' : '') . '">' . hd_player_avatar($hp, 28) . ($w ? '<span class="win-badge">🏆</span>' : '') . '</span>'; } ?>
-            <?php foreach ($ext_players as $en) { $w = in_array($en, $ext_winners, true); echo '<span class="pl-chip' . ($w ? ' win' : '') . '" title="' . esc_attr($en) . ' (host)' . ($w ? ' 🏆' : '') . '">' . hd_ext_avatar($en, 28) . ($w ? '<span class="win-badge">🏆</span>' : '') . '</span>'; } ?>
+            <?php foreach ($ext_players as $en) { if (trim((string)$en) === '') continue; $w = in_array($en, $ext_winners, true); echo '<span class="pl-chip' . ($w ? ' win' : '') . '" title="' . esc_attr($en) . ' (host)' . ($w ? ' 🏆' : '') . '">' . hd_ext_avatar($en, 28) . ($w ? '<span class="win-badge">🏆</span>' : '') . '</span>'; } ?>
           </span>
         </div>
       <?php endwhile; wp_reset_postdata(); ?>
@@ -231,6 +231,42 @@ $plays = new WP_Query([
       </table>
     <?php else: ?>
       <p class="hint">Tuhle hru jste zatím nehráli.</p>
+    <?php endif; ?>
+
+    <?php
+      // seznam partií této hry – s možností úpravy / smazání
+      $gs_pids = get_posts([
+        'post_type'      => 'partie',
+        'posts_per_page' => -1,
+        'fields'         => 'ids',
+        'meta_query'     => [['key' => 'game', 'value' => $id]],
+      ]);
+      usort($gs_pids, function ($a, $b) { return strcmp((string) hd_meta($b, 'play_date'), (string) hd_meta($a, 'play_date')); });
+    ?>
+    <?php if ($gs_pids): ?>
+      <h3 class="gs-plays-h">📖 Partie <span class="hint">(klikni na ✏️ pro úpravu)</span></h3>
+      <div class="gs-plays">
+        <?php foreach ($gs_pids as $pid):
+          $p_players = (array) hd_meta($pid, 'players', []);
+          $p_winners = array_map('strval', (array) hd_meta($pid, 'winners', []));
+          $p_ext     = (array) hd_meta($pid, 'ext_players', []);
+          $p_extw    = array_map('strval', (array) hd_meta($pid, 'ext_winners', []));
+        ?>
+          <div class="gs-play" id="gsp<?php echo $pid; ?>">
+            <span class="gsp-date"><?php echo esc_html(hd_format_date(hd_meta($pid, 'play_date'))); ?></span>
+            <span class="gsp-players">
+              <?php foreach ($p_players as $hp) { $w = in_array((string)$hp, $p_winners, true); echo '<span class="pl-chip' . ($w ? ' win' : '') . '" title="' . esc_attr(hd_player_name($hp)) . '">' . hd_player_avatar($hp, 26) . ($w ? '<span class="win-badge">🏆</span>' : '') . '</span>'; } ?>
+              <?php foreach ($p_ext as $en) { if (trim((string)$en) === '') continue; $w = in_array($en, $p_extw, true); echo '<span class="pl-chip' . ($w ? ' win' : '') . '" title="' . esc_attr($en) . ' (host)">' . hd_ext_avatar($en, 26) . ($w ? '<span class="win-badge">🏆</span>' : '') . '</span>'; } ?>
+            </span>
+            <?php if (is_user_logged_in()): ?>
+              <span class="gsp-actions">
+                <button type="button" class="icon-btn ic-edit js-edit-play" data-hd="<?php echo hd_play_edit_json($pid); ?>" title="Upravit partii">✏️</button>
+                <a class="icon-btn ic-del js-del-play" href="<?php echo esc_url(wp_nonce_url(admin_url('admin-post.php?action=hd_delete_play&id=' . $pid), 'hd_delplay_' . $pid)); ?>" data-name="<?php echo esc_attr(get_the_title($id)); ?>" title="Smazat partii">🗑️</a>
+              </span>
+            <?php endif; ?>
+          </div>
+        <?php endforeach; ?>
+      </div>
     <?php endif; ?>
   </div>
 </div>

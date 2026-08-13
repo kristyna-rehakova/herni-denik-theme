@@ -215,7 +215,13 @@
       var opener = e.target.closest('.js-open-play');
       if (opener) { e.preventDefault(); openModal(opener.dataset.game || ''); return; }
       var ed = e.target.closest('.js-edit-play');
-      if (ed) { e.preventDefault(); try { editPlay(JSON.parse(ed.dataset.hd || '{}')); } catch (_) {} return; }
+      if (ed) {
+        e.preventDefault();
+        var gsm = document.getElementById('hdGameStatsModal'); // zavři případné okno statistik
+        if (gsm && !gsm.hidden) gsm.hidden = true;
+        try { editPlay(JSON.parse(ed.dataset.hd || '{}')); } catch (_) {}
+        return;
+      }
       if (e.target.closest('.js-add-ext')) {
         e.preventDefault();
         var n = extName ? extName.value.trim() : '';

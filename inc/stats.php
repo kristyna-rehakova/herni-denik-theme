@@ -85,6 +85,8 @@ function hd_game_stats($gid) {
             if (in_array($hp, $winners, true)) $tally[$k]['won']++;
         }
         foreach ($ext as $en) {
+            $en = is_string($en) ? trim($en) : '';
+            if ($en === '') continue; // přeskoč prázdné/neúplné hosty (fantom „host")
             $k = 'e' . $en;
             if (!isset($tally[$k])) $tally[$k] = ['name' => $en, 'id' => 0, 'ext' => true, 'played' => 0, 'won' => 0];
             $tally[$k]['played']++;

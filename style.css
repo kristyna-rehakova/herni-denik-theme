@@ -5,7 +5,7 @@ GitHub Theme URI: https://github.com/kristyna-rehakova/herni-denik-theme
 Update URI: https://github.com/kristyna-rehakova/herni-denik-theme
 Description: Skupinový deník deskových her — sbírka (Herna), odehrané hry (Deník), hráči. Vlastní typy obsahu + přihlášení a role přes WordPress. Nasazení přes GitHub Updater / WP Pusher.
 Author: Herní deník
-Version: 0.23.0
+Version: 0.24.0
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
@@ -344,6 +344,15 @@ main{max-width:1100px;margin:22px auto;padding:0 16px 60px}
 .me-tag{font-size:.72rem;background:#d6ecfa;color:#2b6a9c;border-radius:999px;padding:2px 8px;font-weight:700;align-self:center;white-space:nowrap}
 .pf-email-ro{padding:8px 11px;border:1px solid var(--line);border-radius:10px;background:#f4f4f0;color:var(--muted);font-weight:400}
 .gs-total{margin-bottom:12px;color:var(--wood-dark)}
+/* seznam partií v okně Statistiky */
+.gs-plays-h{margin:18px 0 8px;font-size:1.02rem;color:var(--wood-dark)}
+.gs-plays-h .hint{font-weight:400;font-size:.8rem;color:var(--muted)}
+.gs-plays{display:flex;flex-direction:column;gap:6px}
+.gs-play{display:flex;align-items:center;gap:10px;padding:7px 9px;border:1px solid var(--line);border-radius:12px;background:#fbfaf6}
+.gs-play .gsp-date{font-size:.82rem;color:var(--muted);white-space:nowrap;min-width:78px}
+.gs-play .gsp-players{display:flex;flex-wrap:wrap;gap:4px;flex:1}
+.gs-play .gsp-players .pl-chip{position:relative}
+.gs-play .gsp-actions{display:flex;gap:5px;margin-left:auto}
 /* nahoru */
 .to-top-row{text-align:right;margin-top:16px}
 #toTop{position:fixed;right:max(16px,calc(50% - 572px));bottom:24px;width:52px;height:52px;border-radius:50%;border:none;background:var(--accent-2);color:#fff;font-size:1.5rem;cursor:pointer;box-shadow:0 4px 14px rgba(50,60,35,.3);z-index:60;display:flex;align-items:center;justify-content:center;transition:.15s}

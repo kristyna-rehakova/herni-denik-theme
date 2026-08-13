@@ -12,6 +12,7 @@ function hd_front_assets() {
         wp_localize_script('hd-app', 'HD', [
             'ajax'       => admin_url('admin-ajax.php'),
             'parseNonce' => wp_create_nonce('hd_import_parse'),
+            'favNonce'   => wp_create_nonce('hd_fav'),
             'expansions' => hd_all_expansions(),
         ]);
     }
@@ -142,7 +143,7 @@ function hd_handle_save_cover() {
     if (!empty($_POST['remove'])) {
         delete_post_thumbnail($gid);
         foreach (['img_x','img_y','img_zoom','img_size'] as $k) delete_post_meta($gid, $k);
-        wp_safe_redirect(add_query_arg('hd_cover', 'ok', $back)); exit;
+        wp_safe_redirect(add_query_arg('hd_cover', 'ok', $back) . '#g' . $gid); exit;
     }
 
     if (!empty($_FILES['cover_file']['name'])) {
@@ -157,9 +158,24 @@ function hd_handle_save_cover() {
     update_post_meta($gid, 'img_zoom', floatval($_POST['img_zoom'] ?? 1));
     update_post_meta($gid, 'img_size', sanitize_text_field($_POST['img_size'] ?? ''));
 
-    wp_safe_redirect(add_query_arg('hd_cover', 'ok', $back)); exit;
+    wp_safe_redirect(add_query_arg('hd_cover', 'ok', $back) . '#g' . $gid); exit;
 }
 add_action('admin_post_hd_save_cover', 'hd_handle_save_cover');
+
+/** AJAX: přepni oblíbenou hru „Moje". */
+function hd_ajax_toggle_fav() {
+    if (!is_user_logged_in()) wp_send_json_error();
+    check_ajax_referer('hd_fav', 'nonce');
+    $gid = intval($_POST['game'] ?? 0);
+    if (!$gid) wp_send_json_error();
+    $uid = get_current_user_id();
+    $favs = hd_user_favs($uid);
+    if (in_array($gid, $favs, true)) { $favs = array_values(array_diff($favs, [$gid])); $state = 0; }
+    else { $favs[] = $gid; $state = 1; }
+    update_user_meta($uid, 'hd_favs', array_values(array_unique($favs)));
+    wp_send_json_success(['fav' => $state]);
+}
+add_action('wp_ajax_hd_toggle_fav', 'hd_ajax_toggle_fav');
 
 /** Zpracování odeslaného formuláře partie. */
 function hd_handle_add_play() {

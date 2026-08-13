@@ -58,7 +58,7 @@ $plays = new WP_Query([
 <?php hd_pending_banner($id); ?>
 
 <article class="detail">
-  <div class="detail-head">
+  <div class="detail-head" id="g<?php echo $id; ?>">
     <div class="detail-img">
       <?php echo hd_cover_inner($id, '<span class="ph">🎲</span>'); ?>
       <?php if (current_user_can('edit_post', $id)): ?>

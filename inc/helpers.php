@@ -157,6 +157,17 @@ function hd_play_edit_json($pid) {
     return esc_attr(wp_json_encode($d));
 }
 
+/** Oblíbené hry přihlášeného uživatele (pole ID). */
+function hd_user_favs($uid = 0) {
+    $uid = $uid ?: get_current_user_id();
+    if (!$uid) return [];
+    return array_values(array_filter(array_map('intval', (array) get_user_meta($uid, 'hd_favs', true))));
+}
+/** Je hra mezi „mými"? */
+function hd_is_fav($gid) {
+    return in_array((int) $gid, hd_user_favs(), true);
+}
+
 /** Počet odehraných partií dané hry. */
 function hd_play_count($game_id) {
     $q = new WP_Query([

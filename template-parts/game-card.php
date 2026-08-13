@@ -14,7 +14,8 @@ $plays = hd_play_count($id);
 
 $t_for_filter = hd_meta($id, 'time_max') ?: hd_meta($id, 'time_min');
 ?>
-<div class="game-card"
+<div class="game-card" id="g<?php echo $id; ?>"
+     data-fav="<?php echo (is_user_logged_in() && hd_is_fav($id)) ? '1' : '0'; ?>"
      data-name="<?php echo esc_attr(mb_strtolower(get_the_title())); ?>"
      data-pmin="<?php echo esc_attr(hd_meta($id, 'players_min')); ?>"
      data-pmax="<?php echo esc_attr(hd_meta($id, 'players_max')); ?>"
@@ -25,6 +26,9 @@ $t_for_filter = hd_meta($id, 'time_max') ?: hd_meta($id, 'time_min');
      data-plays="<?php echo (int) $plays; ?>">
   <div class="thumb">
     <a class="thumb-link" href="<?php the_permalink(); ?>"><?php echo hd_cover_inner($id); ?></a>
+    <?php if (is_user_logged_in()): ?>
+      <button type="button" class="fav-btn js-fav <?php echo hd_is_fav($id) ? 'on' : ''; ?>" data-game="<?php echo $id; ?>" title="Moje hry"><?php echo hd_is_fav($id) ? '♥' : '♡'; ?></button>
+    <?php endif; ?>
     <?php if (current_user_can('edit_post', $id)): ?>
       <button type="button" class="thumb-edit js-edit-cover" <?php echo hd_cover_data($id); ?> title="Změnit obrázek">✏️</button>
     <?php endif; ?>

@@ -13,6 +13,8 @@
     var fPub = document.getElementById('hdPublisher');
     var fSort = document.getElementById('hdSort');
     var countEl = document.getElementById('hdCount');
+    var favToggle = document.getElementById('hdFavToggle');
+    var favOnly = false;
 
     function norm(s) { return (s || '').toString().toLowerCase(); }
 
@@ -39,6 +41,8 @@
       if (fDiff && fDiff.value && card.dataset.diff !== fDiff.value) return false;
       // vydavatel
       if (fPub && fPub.value && card.dataset.pub !== fPub.value) return false;
+      // jen moje
+      if (favOnly && card.dataset.fav !== '1') return false;
       return true;
     }
 
@@ -69,6 +73,34 @@
       if (!el) return;
       el.addEventListener('input', apply);
       el.addEventListener('change', apply);
+    });
+
+    if (favToggle) {
+      favToggle.addEventListener('click', function () {
+        favOnly = !favOnly;
+        favToggle.classList.toggle('active', favOnly);
+        apply();
+      });
+    }
+
+    // klik na srdíčko → uložení „Moje" (AJAX), bez přenačtení
+    grid.addEventListener('click', function (e) {
+      var h = e.target.closest('.js-fav');
+      if (!h || typeof HD === 'undefined') return;
+      e.preventDefault();
+      var body = new URLSearchParams();
+      body.set('action', 'hd_toggle_fav'); body.set('nonce', HD.favNonce); body.set('game', h.dataset.game || '');
+      fetch(HD.ajax, { method: 'POST', body: body, credentials: 'same-origin' })
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+          if (!res || !res.success) return;
+          var on = res.data.fav === 1;
+          h.classList.toggle('on', on);
+          h.textContent = on ? '♥' : '♡';
+          var card = h.closest('.game-card');
+          if (card) card.dataset.fav = on ? '1' : '0';
+          if (favOnly) apply();
+        }).catch(function () {});
     });
 
     // přepínač dlaždice / seznam

@@ -75,6 +75,9 @@ $total = $games->post_count;
       <span class="item"><span class="lico ic-del">🗑️</span> = smazat hru ze seznamu</span>
     </div>
     <div class="rowtools">
+      <?php if (is_user_logged_in()): ?>
+        <button type="button" id="hdFavToggle" class="hd-fav-toggle">♥ Moje</button>
+      <?php endif; ?>
       <label class="sortlbl">Řadit:
         <select id="hdSort">
           <option value="name">abecedně</option>

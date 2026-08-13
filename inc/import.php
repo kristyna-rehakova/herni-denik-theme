@@ -5,6 +5,7 @@
  * původního ID (meta hd_src_id) se existující záznamy přeskočí.
  */
 if (!defined('ABSPATH')) exit;
+require_once __DIR__ . '/ranges-data.php';
 
 function hd_import_menu() {
     add_management_page('Import Herního deníku', 'Import Herního deníku', 'manage_options', 'hd-import', 'hd_import_page');
@@ -64,6 +65,17 @@ function hd_import_page() {
     if (!empty($_POST['hd_import_go']) && check_admin_referer('hd_import')) {
         hd_run_import();
     }
+    if (!empty($_POST['hd_fill_ranges']) && check_admin_referer('hd_fill_ranges', 'hd_fill_nonce')) {
+        hd_run_fill_ranges();
+    }
+
+    // Rychlé tlačítko: doplní rozsahy z dat zabudovaných v šabloně (bez nahrávání)
+    echo '<hr style="margin:22px 0"><h2>🔢 Doplnit rozsahy hráčů a času</h2>';
+    echo '<p>Použije <em>min–max počtu hráčů</em> a <em>délku hry</em> z dat uložených přímo v šabloně (' . count(hd_ranges_data()) . ' her z tvé zálohy). <strong>Nemusíš nic nahrávat.</strong> Nic jiného (popisy, obálky, partie) se nezmění. Ukáže i přehled bylo → nově.</p>';
+    echo '<form method="post"><input type="hidden" name="hd_fill_ranges" value="1">';
+    wp_nonce_field('hd_fill_ranges', 'hd_fill_nonce');
+    submit_button('Doplnit rozsahy teď', 'primary', 'hd_fill_go');
+    echo '</form>';
 
     $max = size_format(wp_max_upload_size());
     echo '<form method="post" enctype="multipart/form-data">';
@@ -107,6 +119,30 @@ function hd_run_ranges_only($data) {
     echo '<div class="notice notice-success"><p>✅ Rozsahy doplněny u <strong>' . (int) $done . '</strong> her.';
     if ($miss) echo ' Nenalezeno (přeskočeno): ' . esc_html(implode(', ', $misses)) . '.';
     echo '</p></div>';
+}
+
+/** Doplní rozsahy (hráči + čas) ze zabudovaných dat šablony. Vypíše přehled bylo → nově. */
+function hd_run_fill_ranges() {
+    $data  = hd_ranges_data();
+    $games = get_posts(['post_type' => 'hra', 'numberposts' => -1, 'fields' => 'ids', 'post_status' => 'any']);
+    $rows = ''; $upd = 0; $nomatch = [];
+    foreach ($games as $gid) {
+        $title = trim(get_the_title($gid));
+        $key = function_exists('mb_strtolower') ? mb_strtolower($title) : strtolower($title);
+        if (!isset($data[$key])) { $nomatch[] = $title; continue; }
+        list($pmin, $pmax, $tmin, $tmax) = $data[$key];
+        $old = get_post_meta($gid, 'players_min', true) . '–' . get_post_meta($gid, 'players_max', true);
+        if ($pmin) update_post_meta($gid, 'players_min', $pmin);
+        if ($pmax) update_post_meta($gid, 'players_max', $pmax);
+        if ($tmin) update_post_meta($gid, 'time_min', $tmin);
+        if ($tmax) update_post_meta($gid, 'time_max', $tmax);
+        $rows .= '<tr><td>' . esc_html($title) . '</td><td>' . esc_html($old) . '</td><td><strong>' . esc_html($pmin . '–' . $pmax) . '</strong></td><td>' . esc_html($tmin . '–' . $tmax) . ' min</td></tr>';
+        $upd++;
+    }
+    echo '<div class="notice notice-success"><p>✅ Rozsahy doplněny u <strong>' . (int) $upd . '</strong> her.';
+    if ($nomatch) echo ' Nespárováno (nechány beze změny): ' . esc_html(implode(', ', $nomatch)) . '.';
+    echo '</p></div>';
+    if ($rows) echo '<table class="widefat striped" style="margin-bottom:20px"><thead><tr><th>Hra</th><th>Hráči (bylo)</th><th>Hráči (nově)</th><th>Čas (nově)</th></tr></thead><tbody>' . $rows . '</tbody></table>';
 }
 
 function hd_run_import() {

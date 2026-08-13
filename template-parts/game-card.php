@@ -5,7 +5,7 @@
 if (!defined('ABSPATH')) exit;
 $id = get_the_ID();
 $pl = hd_players_label($id);
-$tl = hd_time_label($id);
+$tl = hd_time_tile_label($id); // v dlaždici jen horní hranice; rozsah je v detailu
 $d  = hd_diff($id);
 $pub = hd_meta($id, 'publisher');
 $year = hd_meta($id, 'year');

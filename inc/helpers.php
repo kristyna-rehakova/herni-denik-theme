@@ -26,6 +26,12 @@ function hd_time_label($id) {
     return $t ? "$t min" : '';
 }
 
+/** Čas pro dlaždici – jen horní hranice (rozsah se ukazuje jen v detailu hry). */
+function hd_time_tile_label($id) {
+    $t = hd_meta($id, 'time_max') ?: hd_meta($id, 'time_min');
+    return $t ? "$t min" : '';
+}
+
 /** difficulty meta: 'lehka' | 'stredni' | 'tezka' */
 function hd_diff($id) {
     $d = hd_meta($id, 'difficulty');

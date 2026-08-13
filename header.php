@@ -14,7 +14,7 @@
     <div class="spacer"></div>
     <span class="userbox">
       <?php if (is_user_logged_in()): $u = wp_get_current_user(); ?>
-        <?php echo esc_html($u->display_name); ?> · <a href="<?php echo esc_url(wp_logout_url(home_url('/'))); ?>">Odhlásit</a>
+        <?php echo esc_html($u->display_name); ?> · <a href="<?php echo esc_url(function_exists('hd_ucet_url') ? hd_ucet_url() : home_url('/')); ?>">⚙️ Můj účet</a> · <a href="<?php echo esc_url(wp_logout_url(home_url('/'))); ?>">Odhlásit</a>
       <?php else: ?>
         <a href="<?php echo esc_url(wp_login_url()); ?>">Přihlásit</a>
       <?php endif; ?>

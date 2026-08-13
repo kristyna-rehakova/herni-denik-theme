@@ -70,9 +70,43 @@ function hd_import_page() {
     wp_nonce_field('hd_import');
     echo '<table class="form-table"><tr><th>Soubor zálohy (.json)</th><td><input type="file" name="hd_file" accept="application/json,.json" required> <p class="description">Limit nahrávání serveru: ' . esc_html($max) . '</p></td></tr>';
     echo '<tr><th>Obálky</th><td><label><input type="checkbox" name="hd_covers" value="1" checked> Stáhnout obálky her z webu (může chvíli trvat; když se nějaká nestáhne, hra se přesto vytvoří)</label></td></tr>';
-    echo '<tr><th>Přepsat existující</th><td><label><input type="checkbox" name="hd_overwrite" value="1"> Aktualizovat údaje u her/hráčů/partií, které už existují (např. oprava obtížnosti). Obálky se u existujících stáhnou jen tam, kde chybí.</label></td></tr></table>';
+    echo '<tr><th>Přepsat existující</th><td><label><input type="checkbox" name="hd_overwrite" value="1"> Aktualizovat údaje u her/hráčů/partií, které už existují (např. oprava obtížnosti). Obálky se u existujících stáhnou jen tam, kde chybí.</label></td></tr>';
+    echo '<tr><th>🔢 Jen doplnit rozsahy</th><td><label><input type="checkbox" name="hd_ranges_only" value="1"> <strong>Bezpečné:</strong> u existujících her jen doplní <em>min–max počtu hráčů</em> a <em>délku hry</em> ze zálohy. Nic jiného (popisy, obálky, poznámky, partie) se nezmění a nevytvoří.</label></td></tr></table>';
     submit_button('Spustit import', 'primary', 'hd_import_go');
     echo '</form></div>';
+}
+
+/** Najdi hru podle názvu (case-insensitive) – záloha jako fallback, když nesedí hd_src_id. */
+function hd_find_game_by_name($name) {
+    $name = trim((string) $name);
+    if ($name === '') return 0;
+    $q = get_posts(['post_type' => 'hra', 'post_status' => 'any', 'posts_per_page' => 1, 'fields' => 'ids', 'title' => $name]);
+    if ($q) return (int) $q[0];
+    // fallback: porovnání bez ohledu na velikost písmen
+    foreach (get_posts(['post_type' => 'hra', 'post_status' => 'any', 'numberposts' => -1, 'fields' => 'ids']) as $gid) {
+        if (mb_strtolower(get_the_title($gid)) === mb_strtolower($name)) return (int) $gid;
+    }
+    return 0;
+}
+
+/** Bezpečně doplní jen rozsahy (počet hráčů + čas) u existujících her ze zálohy. */
+function hd_run_ranges_only($data) {
+    $done = 0; $miss = 0; $misses = [];
+    foreach ((array)($data['games'] ?? []) as $g) {
+        $id = hd_find_by_src('hra', $g['id'] ?? '');
+        if (!$id) $id = hd_find_game_by_name($g['name'] ?? '');
+        if (!$id) { $miss++; $misses[] = $g['name'] ?? '(bez názvu)'; continue; }
+        foreach ([
+            'players_min' => 'minPlayers', 'players_max' => 'maxPlayers',
+            'time_min'    => 'minTime',    'time_max'    => 'maxTime',
+        ] as $meta => $src) {
+            if (isset($g[$src]) && $g[$src] !== '' && $g[$src] !== null) update_post_meta($id, $meta, $g[$src]);
+        }
+        $done++;
+    }
+    echo '<div class="notice notice-success"><p>✅ Rozsahy doplněny u <strong>' . (int) $done . '</strong> her.';
+    if ($miss) echo ' Nenalezeno (přeskočeno): ' . esc_html(implode(', ', $misses)) . '.';
+    echo '</p></div>';
 }
 
 function hd_run_import() {
@@ -83,6 +117,9 @@ function hd_run_import() {
     $raw = trim($raw);
     $data = json_decode($raw, true);
     if (!is_array($data) || !isset($data['games'])) { echo '<div class="notice notice-error"><p>Soubor nevypadá jako platná záloha (chybí „games").</p></div>'; return; }
+
+    // Bezpečný režim: jen doplnit rozsahy hráčů a času u existujících her
+    if (!empty($_POST['hd_ranges_only'])) { hd_run_ranges_only($data); return; }
 
     $do_covers = !empty($_POST['hd_covers']);
     $overwrite = !empty($_POST['hd_overwrite']);

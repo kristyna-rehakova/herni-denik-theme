@@ -61,6 +61,8 @@ function hd_player_modal() {
           <label class="hd-fld">Jméno a příjmení<input type="text" name="name" id="pfName" required></label>
           <?php if (hd_can_manage()): ?>
             <label class="hd-fld">E-mail <span class="hd-hint">(nepovinné – spáruje hráče s jeho účtem)</span><input type="email" name="email" id="pfEmail" placeholder="jmeno@email.cz"></label>
+          <?php else: ?>
+            <div class="hd-fld">E-mail <span class="hd-hint">(nastavuje admin)</span><div class="pf-email-ro" id="pfEmailRO">—</div></div>
           <?php endif; ?>
           <label class="hd-fld">Barva
             <span class="pf-colors">
@@ -98,7 +100,7 @@ function hd_handle_save_player() {
     if ($name === '') { wp_safe_redirect($back); exit; }
 
     if ($pid && get_post_type($pid) === 'hrac') {
-        if (!hd_can_manage()) wp_die('Úpravu hráče může provést jen admin.');
+        if (!hd_can_manage() && $pid != hd_current_player_id()) wp_die('Upravit můžeš jen svého hráče.');
         wp_update_post(['ID' => $pid, 'post_title' => $name]);
     } else {
         $pid = wp_insert_post(['post_type' => 'hrac', 'post_status' => 'publish', 'post_title' => $name]);

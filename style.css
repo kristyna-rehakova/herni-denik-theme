@@ -5,7 +5,7 @@ GitHub Theme URI: https://github.com/kristyna-rehakova/herni-denik-theme
 Update URI: https://github.com/kristyna-rehakova/herni-denik-theme
 Description: Skupinový deník deskových her — sbírka (Herna), odehrané hry (Deník), hráči. Vlastní typy obsahu + přihlášení a role přes WordPress. Nasazení přes GitHub Updater / WP Pusher.
 Author: Herní deník
-Version: 0.18.1
+Version: 0.19.0
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
@@ -340,6 +340,10 @@ main{max-width:1100px;margin:22px auto;padding:0 16px 60px}
 .grp-btn{background:#fff;border:1px solid var(--line);border-radius:999px;padding:8px 16px;text-decoration:none;color:var(--muted);font-weight:600;font-size:.9rem}
 .grp-btn.active{background:var(--accent);border-color:var(--accent);color:var(--ink)}
 .denik-top #denikMojeToggle{margin-left:auto}
+.denik-topbtns{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.me-tag{font-size:.72rem;background:#d6ecfa;color:#2b6a9c;border-radius:999px;padding:2px 8px;font-weight:700;align-self:center;white-space:nowrap}
+.pf-email-ro{padding:8px 11px;border:1px solid var(--line);border-radius:10px;background:#f4f4f0;color:var(--muted);font-weight:400}
+.gs-total{margin-bottom:12px;color:var(--wood-dark)}
 /* deník – pohled podle her */
 .gg-head{display:flex;align-items:center;gap:12px;padding:6px 4px 8px;border-bottom:2px solid var(--line);margin-bottom:8px}
 .gg-thumb{position:relative;width:46px;height:46px;flex:0 0 auto;border-radius:9px;overflow:hidden;background:#e6ecd6;display:flex;align-items:center;justify-content:center;font-size:1.4rem;text-decoration:none}

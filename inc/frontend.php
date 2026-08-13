@@ -202,7 +202,6 @@ function hd_handle_add_play() {
     $title = trim(get_the_title($gid) . ' ' . $date);
     $pid = intval($_POST['play_id'] ?? 0);
     if ($pid && get_post_type($pid) === 'partie') {
-        if (!current_user_can('edit_post', $pid)) wp_die('Na úpravu partie nemáš oprávnění.');
         $id = $pid;
         wp_update_post(['ID' => $id, 'post_title' => $title]);
     } else {
@@ -234,7 +233,7 @@ add_action('admin_post_hd_add_play', 'hd_handle_add_play');
 function hd_handle_delete_play() {
     $id = intval($_GET['id'] ?? 0);
     if (!$id || get_post_type($id) !== 'partie') wp_die('Neplatná partie.');
-    if (!current_user_can('edit_post', $id)) wp_die('Na smazání partie nemáš oprávnění.');
+    if (!is_user_logged_in()) wp_die('Musíš být přihlášen.');
     check_admin_referer('hd_delplay_' . $id);
     wp_trash_post($id);
     wp_safe_redirect(add_query_arg('hd_play', 'del', get_post_type_archive_link('partie')));
@@ -247,7 +246,7 @@ function hd_handle_move_play() {
     $id  = intval($_GET['id'] ?? 0);
     $dir = (($_GET['dir'] ?? '') === 'up') ? 'up' : 'down';
     if (!$id || get_post_type($id) !== 'partie') wp_die('Neplatná partie.');
-    if (!current_user_can('edit_post', $id)) wp_die('Nemáš oprávnění.');
+    if (!is_user_logged_in()) wp_die('Musíš být přihlášen.');
     check_admin_referer('hd_moveplay_' . $id);
     $day = get_post_meta($id, 'play_date', true);
     $ids = get_posts(['post_type' => 'partie', 'numberposts' => -1, 'meta_key' => 'play_date', 'meta_value' => $day, 'fields' => 'ids']);

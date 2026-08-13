@@ -69,6 +69,33 @@ function hd_compute_stats() {
     ];
 }
 
+/** Statistiky jedné hry: počet partií + žebříček hráčů (vč. hostů). */
+function hd_game_stats($gid) {
+    $pids = get_posts(['post_type' => 'partie', 'numberposts' => -1, 'meta_key' => 'game', 'meta_value' => (int) $gid, 'fields' => 'ids']);
+    $tally = [];
+    foreach ($pids as $pid) {
+        $players = array_map('intval', (array) get_post_meta($pid, 'players', true));
+        $winners = array_map('intval', (array) get_post_meta($pid, 'winners', true));
+        $ext = (array) get_post_meta($pid, 'ext_players', true);
+        $extw = (array) get_post_meta($pid, 'ext_winners', true);
+        foreach ($players as $hp) {
+            $k = 'h' . $hp;
+            if (!isset($tally[$k])) $tally[$k] = ['name' => hd_player_name($hp), 'id' => $hp, 'ext' => false, 'played' => 0, 'won' => 0];
+            $tally[$k]['played']++;
+            if (in_array($hp, $winners, true)) $tally[$k]['won']++;
+        }
+        foreach ($ext as $en) {
+            $k = 'e' . $en;
+            if (!isset($tally[$k])) $tally[$k] = ['name' => $en, 'id' => 0, 'ext' => true, 'played' => 0, 'won' => 0];
+            $tally[$k]['played']++;
+            if (in_array($en, $extw, true)) $tally[$k]['won']++;
+        }
+    }
+    $rank = array_values($tally);
+    usort($rank, function ($a, $b) { return $b['won'] <=> $a['won'] ?: $b['played'] <=> $a['played']; });
+    return ['total' => count($pids), 'rank' => $rank];
+}
+
 /** Osobní statistiky jednoho hráče. */
 function hd_compute_player_stats($hrac_id) {
     $hrac_id = (int) $hrac_id;

@@ -57,7 +57,7 @@ if (!function_exists('hd_render_play_row')) {
             <?php $pexps = (array) hd_meta($pid, 'play_expansions', []); if ($pexps) echo '<div class="pexp-line">🧩 ' . esc_html(implode(', ', $pexps)) . '</div>'; ?>
             <?php if ($note) echo '<div class="pnote">📝 ' . nl2br(esc_html($note)) . '</div>'; ?>
           </div>
-          <?php if (current_user_can('edit_post', $pid)): ?>
+          <?php if (is_user_logged_in()): ?>
             <div class="play-actions">
               <button type="button" class="icon-btn ic-edit js-edit-play" data-hd="<?php echo hd_play_edit_json($pid); ?>" title="Upravit">✏️</button>
               <a class="icon-btn ic-del js-del-play" href="<?php echo esc_url(wp_nonce_url(admin_url('admin-post.php?action=hd_delete_play&id=' . $pid), 'hd_delplay_' . $pid)); ?>" data-name="<?php echo esc_attr($gid ? get_the_title($gid) : 'partii'); ?>" title="Smazat">🗑️</a>
@@ -85,7 +85,12 @@ if (!function_exists('hd_render_play_row')) {
 <?php endif; ?>
 
 <?php if (is_user_logged_in()): ?>
-  <p><button type="button" class="btn big js-open-play">🎲 Zapsat do Deníku</button></p>
+  <div class="denik-topbtns">
+    <button type="button" class="btn big js-open-play">🎲 Zapsat do Deníku</button>
+    <?php if ($all_pids): ?>
+      <button type="button" id="denikMojeToggle" class="btn big hd-fav-toggle">♥ Moje</button>
+    <?php endif; ?>
+  </div>
 <?php endif; ?>
 
 <?php if ($all_pids): ?>
@@ -94,9 +99,6 @@ if (!function_exists('hd_render_play_row')) {
       <a class="grp-btn <?php echo $radit === 'dny' ? 'active' : ''; ?>" href="<?php echo esc_url(add_query_arg('radit', 'dny')); ?>">📅 Po dnech</a>
       <a class="grp-btn <?php echo $radit === 'hry' ? 'active' : ''; ?>" href="<?php echo esc_url(add_query_arg('radit', 'hry')); ?>">🎲 Podle her</a>
     </div>
-    <?php if (is_user_logged_in()): ?>
-      <button type="button" id="denikMojeToggle" class="btn hd-fav-toggle">♥ Moje</button>
-    <?php endif; ?>
   </div>
 
   <?php if ($radit === 'dny'): ?>

@@ -488,7 +488,7 @@
   if (playerModal) {
     var pfId = gfEl('pfId'), pfNick = gfEl('pfNick'), pfName = gfEl('pfName'),
         pfColor = gfEl('pfColor'), pfEmoji = gfEl('pfEmoji'), pfAvatar = gfEl('pfAvatar'), pfTitle = gfEl('pfTitle'),
-        pfEmail = gfEl('pfEmail');
+        pfEmail = gfEl('pfEmail'), pfEmailRO = gfEl('pfEmailRO');
     function pv() {
       if (!pfAvatar) return;
       var label = (pfNick.value.trim() || pfName.value.trim() || '?');
@@ -515,6 +515,7 @@
           pfId.value = d.id || ''; pfNick.value = d.nick || ''; pfName.value = d.name || '';
           pfColor.value = d.color || '#eeb088'; pfEmoji.value = d.emoji || '';
           if (pfEmail) pfEmail.value = d.email || '';
+          if (pfEmailRO) pfEmailRO.textContent = d.email || '—';
           if (pfTitle) pfTitle.textContent = 'Upravit hráče'; pv(); openPlayer();
         } catch (_) {}
         return;
@@ -625,6 +626,16 @@
           .catch(function () { b.textContent = orig; b.disabled = false; alert('Chyba při načítání.'); });
       }
     });
+  }
+
+  /* ---------- STATISTIKY HRY (okno na detailu) ---------- */
+  var gstatsModal = document.getElementById('hdGameStatsModal');
+  if (gstatsModal) {
+    document.addEventListener('click', function (e) {
+      if (e.target.closest('.js-game-stats')) { e.preventDefault(); gstatsModal.hidden = false; document.body.style.overflow = 'hidden'; }
+      if (e.target.closest('.js-close-gstats')) { e.preventDefault(); gstatsModal.hidden = true; document.body.style.overflow = ''; }
+    });
+    document.addEventListener('keydown', function (e) { if (!gstatsModal.hidden && e.key === 'Escape') { gstatsModal.hidden = true; document.body.style.overflow = ''; } });
   }
 
   /* ---------- FILTRY DENÍKU ---------- */

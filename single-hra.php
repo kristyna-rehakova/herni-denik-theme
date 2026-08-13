@@ -82,6 +82,7 @@ $plays = new WP_Query([
       <?php if (is_user_logged_in()): ?>
         <p class="detail-actions">
           <button type="button" class="btn big js-open-play" data-game="<?php echo $id; ?>">🎲 Zapsat partii</button>
+          <button type="button" class="btn big ghost js-game-stats">📊 Statistiky</button>
           <?php if ($can): ?>
             <button type="button" class="btn big ghost js-edit-game" data-hd="<?php echo hd_game_edit_json($id); ?>">✏️ Upravit info</button>
           <?php elseif ($is_member): ?>
@@ -206,5 +207,32 @@ $plays = new WP_Query([
 
   <p style="margin-top:30px"><a class="btn back" href="<?php echo esc_url(home_url('/')); ?>">← Zpět do Herny</a></p>
 </article>
+
+<?php $gs = hd_game_stats($id); ?>
+<div class="hd-modal" id="hdGameStatsModal" hidden>
+  <div class="hd-modal-bg js-close-gstats"></div>
+  <div class="hd-modal-card" role="dialog" aria-modal="true">
+    <button type="button" class="hd-modal-x js-close-gstats">×</button>
+    <h2>📊 Statistiky – <?php the_title(); ?></h2>
+    <p class="gs-total">Odehráno celkem: <strong><?php echo (int)$gs['total']; ?>×</strong></p>
+    <?php if ($gs['rank']): ?>
+      <table class="stat-table">
+        <thead><tr><th>#</th><th>Hráč</th><th>Výher 🏆</th><th>Odehráno</th></tr></thead>
+        <tbody>
+          <?php foreach ($gs['rank'] as $i => $r): ?>
+            <tr>
+              <td class="rank"><?php echo $i + 1; ?>.</td>
+              <td class="player-cell"><?php echo $r['ext'] ? hd_ext_avatar($r['name'], 28) : hd_player_avatar($r['id'], 28); ?> <?php echo esc_html($r['name']); ?><?php echo $r['ext'] ? ' <span class="ext-tag">host</span>' : ''; ?></td>
+              <td><strong><?php echo (int)$r['won']; ?></strong></td>
+              <td><?php echo (int)$r['played']; ?></td>
+            </tr>
+          <?php endforeach; ?>
+        </tbody>
+      </table>
+    <?php else: ?>
+      <p class="hint">Tuhle hru jste zatím nehráli.</p>
+    <?php endif; ?>
+  </div>
+</div>
 
 <?php endwhile; get_footer(); ?>

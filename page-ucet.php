@@ -23,6 +23,7 @@ $msgs = [
     'mismatch'   => ['err', 'Nová hesla se neshodují.'],
     'short'      => ['err', 'Nové heslo musí mít aspoň 6 znaků.'],
     'm_bad'      => ['err', 'Vyplň jméno a platný e-mail nového člena.'],
+    'm_nologin'  => ['err', 'Vyplň uživatelské jméno nového člena.'],
     'm_login'    => ['err', 'Uživatelské jméno „' . esc_html($_GET['v'] ?? '') . '" už existuje. Zvol jiné.'],
     'm_email'    => ['err', 'E-mail „' . esc_html($_GET['v'] ?? '') . '" už má účet.'],
     'm_err'      => ['err', 'Účet se nepodařilo vytvořit.'],
@@ -74,9 +75,9 @@ if ($acc === 'm_ok'):
       <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>" class="acc-form">
         <input type="hidden" name="action" value="hd_add_member">
         <?php wp_nonce_field('hd_add_member', 'hd_member_nonce'); ?>
-        <label class="hd-fld">Jméno<input type="text" name="m_name" required placeholder="Např. Anička"></label>
+        <label class="hd-fld">Jméno a příjmení<input type="text" name="m_name" required placeholder="Např. Anna Nováková"></label>
         <label class="hd-fld">E-mail<input type="email" name="m_email" required placeholder="anicka@email.cz"></label>
-        <label class="hd-fld">Uživatelské jméno <span class="hd-hint">(nepovinné – doplní se z e-mailu)</span><input type="text" name="m_login" placeholder="anicka"></label>
+        <label class="hd-fld">Uživatelské jméno<input type="text" name="m_login" required placeholder="anicka"></label>
         <label class="hd-fld">Heslo <span class="hd-hint">(nepovinné – když necháš prázdné, systém ho vygeneruje a ukáže)</span><input type="text" name="m_pass" placeholder="necháš-li prázdné, vygeneruje se"></label>
         <label class="acc-check"><input type="checkbox" name="m_make_player" value="1" checked> Vytvořit i hráče a spárovat přes e-mail</label>
         <div class="hd-modal-actions"><button type="submit" class="btn">Vytvořit člena</button></div>

@@ -83,9 +83,7 @@ function hd_handle_add_member() {
     $make_player = !empty($_POST['m_make_player']);
 
     if ($name === '' || !is_email($email)) { wp_safe_redirect(add_query_arg('hd_acc', 'm_bad', $back)); exit; }
-    if ($login === '') { // odvoď login z e-mailu / jména
-        $login = sanitize_user(current(explode('@', $email)), true) ?: sanitize_user($name, true);
-    }
+    if ($login === '') { wp_safe_redirect(add_query_arg('hd_acc', 'm_nologin', $back)); exit; }
     if (username_exists($login)) { wp_safe_redirect(add_query_arg(['hd_acc' => 'm_login', 'v' => rawurlencode($login)], $back)); exit; }
     if (email_exists($email))    { wp_safe_redirect(add_query_arg(['hd_acc' => 'm_email', 'v' => rawurlencode($email)], $back)); exit; }
 

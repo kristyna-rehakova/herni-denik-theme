@@ -487,7 +487,8 @@
   var playerModal = document.getElementById('hdPlayerModal');
   if (playerModal) {
     var pfId = gfEl('pfId'), pfNick = gfEl('pfNick'), pfName = gfEl('pfName'),
-        pfColor = gfEl('pfColor'), pfEmoji = gfEl('pfEmoji'), pfAvatar = gfEl('pfAvatar'), pfTitle = gfEl('pfTitle');
+        pfColor = gfEl('pfColor'), pfEmoji = gfEl('pfEmoji'), pfAvatar = gfEl('pfAvatar'), pfTitle = gfEl('pfTitle'),
+        pfEmail = gfEl('pfEmail');
     function pv() {
       if (!pfAvatar) return;
       var label = (pfNick.value.trim() || pfName.value.trim() || '?');
@@ -496,6 +497,7 @@
     }
     function resetPlayer() {
       pfId.value = ''; pfNick.value = ''; pfName.value = ''; pfColor.value = '#eeb088'; pfEmoji.value = '';
+      if (pfEmail) pfEmail.value = '';
       if (pfTitle) pfTitle.textContent = 'Nový hráč'; pv();
     }
     function openPlayer() { playerModal.hidden = false; document.body.style.overflow = 'hidden'; }
@@ -512,6 +514,7 @@
           var d = JSON.parse(ed.dataset.hd || '{}');
           pfId.value = d.id || ''; pfNick.value = d.nick || ''; pfName.value = d.name || '';
           pfColor.value = d.color || '#eeb088'; pfEmoji.value = d.emoji || '';
+          if (pfEmail) pfEmail.value = d.email || '';
           if (pfTitle) pfTitle.textContent = 'Upravit hráče'; pv(); openPlayer();
         } catch (_) {}
         return;
@@ -631,8 +634,22 @@
     var fP = gfEl('fPlayer'), fW = gfEl('fWinner'), fG = gfEl('fGame'), fFrom = gfEl('fFrom'), fTo = gfEl('fTo');
     var mojeToggle = document.getElementById('denikMojeToggle');
     var mojeOnly = false;
+    var gameGroups = Array.prototype.slice.call(denik.querySelectorAll('.game-group'));
     function idlist(s) { return (s || '').split(',').filter(Boolean); }
+    function myId() { return (typeof HD !== 'undefined' && HD.myPlayer) ? String(HD.myPlayer) : ''; }
+
     function applyDenik() {
+      if (gameGroups.length) {
+        // pohled „podle her" – Moje = jen hry, kde jsem hrál/a
+        gameGroups.forEach(function (g) {
+          if (!mojeOnly || !myId()) { g.style.display = ''; return; }
+          var mine = false;
+          g.querySelectorAll('.play-row2').forEach(function (r) { if (idlist(r.dataset.players).indexOf(myId()) > -1) mine = true; });
+          g.style.display = mine ? '' : 'none';
+        });
+        return;
+      }
+      // pohled „po dnech" – filtry řádků
       rows.forEach(function (r) {
         var ok = true;
         if (fP && fP.value && idlist(r.dataset.players).indexOf(fP.value) === -1) ok = false;
@@ -640,7 +657,7 @@
         if (fG && fG.value && r.dataset.game !== fG.value) ok = false;
         if (fFrom && fFrom.value && r.dataset.date && r.dataset.date < fFrom.value) ok = false;
         if (fTo && fTo.value && r.dataset.date && r.dataset.date > fTo.value) ok = false;
-        if (mojeOnly && typeof HD !== 'undefined' && HD.myPlayer && idlist(r.dataset.players).indexOf(String(HD.myPlayer)) === -1) ok = false;
+        if (mojeOnly && myId() && idlist(r.dataset.players).indexOf(myId()) === -1) ok = false;
         r.style.display = ok ? '' : 'none';
       });
       var anyVisible = false;
@@ -656,8 +673,8 @@
     [fP, fW, fG, fFrom, fTo].forEach(function (el) { if (el) { el.addEventListener('change', applyDenik); el.addEventListener('input', applyDenik); } });
     if (mojeToggle) {
       mojeToggle.addEventListener('click', function () {
-        if (!mojeOnly && (typeof HD === 'undefined' || !HD.myPlayer)) {
-          alert('Nejdřív si na stránce Statistiky nastav, který jsi hráč (🙋 Já jsem hráč).');
+        if (!mojeOnly && !myId()) {
+          alert('Nejdřív si přiřaď účet k hráči – v sekci Hráči vyplň u svého hráče e-mail shodný s tvým účtem.');
           return;
         }
         mojeOnly = !mojeOnly;
@@ -665,6 +682,31 @@
         applyDenik();
       });
     }
+
+    // okno „všechny partie hry"
+    var playsModal = document.getElementById('hdPlaysModal');
+    denik.addEventListener('click', function (e) {
+      var b = e.target.closest('.js-more-plays');
+      if (!b || !playsModal) return;
+      e.preventDefault();
+      var group = denik.querySelector('.game-group[data-game="' + b.dataset.game + '"]');
+      var list = group ? group.querySelector('.game-plays-list') : null;
+      var body = document.getElementById('playsBody');
+      var title = document.getElementById('playsTitle');
+      if (title) title.textContent = b.dataset.name || 'Partie';
+      if (body && list) {
+        var clone = list.cloneNode(true);
+        clone.querySelectorAll('[id]').forEach(function (el) { el.removeAttribute('id'); });
+        clone.querySelectorAll('.pl-extra').forEach(function (el) { el.classList.remove('pl-extra'); });
+        body.innerHTML = '';
+        body.appendChild(clone);
+      }
+      playsModal.hidden = false; document.body.style.overflow = 'hidden';
+    });
+    document.addEventListener('click', function (e) {
+      if (e.target.closest('.js-close-plays') && playsModal) { e.preventDefault(); playsModal.hidden = true; document.body.style.overflow = ''; }
+    });
+    document.addEventListener('keydown', function (e) { if (playsModal && !playsModal.hidden && e.key === 'Escape') { playsModal.hidden = true; document.body.style.overflow = ''; } });
   }
 
   /* ---------- POTVRZENÍ SMAZÁNÍ (hra / hráč / partie) ---------- */

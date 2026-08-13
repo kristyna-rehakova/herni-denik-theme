@@ -9,9 +9,10 @@ $s = hd_compute_stats();
 ?>
 <h1 class="page-title">📊 Statistiky</h1>
 
-<?php hd_my_player_selector(); ?>
-
 <?php $me = hd_current_player_id(); ?>
+<?php if (!$me && is_user_logged_in()): ?>
+  <div class="myplayer-form">Chceš vidět svoje statistiky? Přiřaď svůj účet k hráči – v sekci <strong>👥 Hráči</strong> vyplň u svého hráče <strong>e-mail</strong> shodný s tvým účtem.</div>
+<?php endif; ?>
 <?php if ($me): $mp = hd_compute_player_stats($me); ?>
   <section class="my-stats">
     <h2>🙋 Moje statistiky – <?php echo esc_html(hd_player_name($me)); ?></h2>

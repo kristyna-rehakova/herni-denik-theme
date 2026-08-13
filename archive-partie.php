@@ -22,7 +22,7 @@ $all_games   = hd_all_games();
 
 // řádek partie (sdílené pro obě seskupení)
 if (!function_exists('hd_render_play_row')) {
-    function hd_render_play_row($pid, $with_arrows, $show_game = true) {
+    function hd_render_play_row($pid, $with_arrows, $show_game = true, $extra_class = '') {
         $gid = (int) hd_meta($pid, 'game');
         $players = array_map('intval', (array) hd_meta($pid, 'players', []));
         $winners = array_map('intval', (array) hd_meta($pid, 'winners', []));
@@ -32,7 +32,7 @@ if (!function_exists('hd_render_play_row')) {
         $pnames = array_merge(array_map('hd_player_name', $players), $ext_players);
         $wnames = array_merge(array_map('hd_player_name', $winners), $ext_winners);
         ?>
-        <div class="play-row2" id="p<?php echo $pid; ?>"
+        <div class="play-row2 <?php echo esc_attr($extra_class); ?>" id="p<?php echo $pid; ?>"
              data-players="<?php echo esc_attr(implode(',', $players)); ?>"
              data-winners="<?php echo esc_attr(implode(',', $winners)); ?>"
              data-game="<?php echo $gid; ?>"
@@ -101,6 +101,7 @@ if (!function_exists('hd_render_play_row')) {
     <?php endif; ?>
   </div>
 
+  <?php if ($radit === 'dny'): ?>
   <div class="toolbar card denik-filters">
     <select id="fPlayer" aria-label="Hráč">
       <option value="">Hráč</option>
@@ -117,6 +118,7 @@ if (!function_exists('hd_render_play_row')) {
     <span class="dater">od <input type="date" id="fFrom"></span>
     <span class="dater">do <input type="date" id="fTo"></span>
   </div>
+  <?php endif; ?>
 
   <div id="denikList">
   <?php if ($radit === 'dny'):
@@ -137,23 +139,47 @@ if (!function_exists('hd_render_play_row')) {
       </section>
     <?php endforeach;
   else:
-    // seskupení podle her (nejhranější nahoře)
+    // seskupení podle her (abecedně)
     $by_game = [];
     foreach ($all_pids as $pid) { $gid = (int) hd_meta($pid, 'game'); $by_game[$gid][] = $pid; }
-    uasort($by_game, function ($a, $b) { return count($b) - count($a); });
-    foreach ($by_game as $gid => $pids):
-      $gname = $gid ? get_the_title($gid) : '(smazaná hra)'; ?>
-      <section class="day">
-        <h2 class="day-head">
-          <?php if ($gid): ?><a href="<?php echo esc_url(get_permalink($gid)); ?>" style="text-decoration:none"><?php echo esc_html($gname); ?></a><?php else: ?><?php echo esc_html($gname); ?><?php endif; ?>
-          <span class="day-count"><?php echo count($pids); ?>×</span>
-        </h2>
-        <?php foreach ($pids as $pid) hd_render_play_row($pid, false, false); ?>
+    $order = [];
+    foreach ($by_game as $gid => $pids) { $order[$gid] = $gid ? remove_accents(mb_strtolower(get_the_title($gid))) : 'zzzz'; }
+    asort($order, SORT_STRING);
+    foreach (array_keys($order) as $gid):
+      $pids = $by_game[$gid];
+      $gname = $gid ? get_the_title($gid) : '(smazaná hra)';
+      $cnt = count($pids); ?>
+      <section class="day game-group" data-game="<?php echo (int)$gid; ?>">
+        <div class="gg-head">
+          <?php if ($gid): ?>
+            <a class="gg-thumb" href="<?php echo esc_url(get_permalink($gid)); ?>"><?php echo hd_cover_inner($gid); ?></a>
+            <a class="gg-name" href="<?php echo esc_url(get_permalink($gid)); ?>"><?php echo esc_html($gname); ?></a>
+          <?php else: ?>
+            <span class="gg-thumb">🎲</span>
+            <span class="gg-name"><?php echo esc_html($gname); ?></span>
+          <?php endif; ?>
+          <span class="day-count"><?php echo $cnt; ?>×</span>
+        </div>
+        <div class="game-plays-list">
+          <?php $i = 0; foreach ($pids as $pid) { hd_render_play_row($pid, false, false, $i >= 3 ? 'pl-extra' : ''); $i++; } ?>
+        </div>
+        <?php if ($cnt > 3): ?>
+          <div class="more-plays"><button type="button" class="btn small ghost js-more-plays" data-game="<?php echo (int)$gid; ?>" data-name="<?php echo esc_attr($gname); ?>">Zobrazit všech <?php echo $cnt; ?> →</button></div>
+        <?php endif; ?>
       </section>
     <?php endforeach;
   endif; ?>
   </div>
   <p class="hd-noresult" id="denikEmpty" hidden>Žádná partie neodpovídá filtru.</p>
+
+  <div class="hd-modal" id="hdPlaysModal" hidden>
+    <div class="hd-modal-bg js-close-plays"></div>
+    <div class="hd-modal-card hd-modal-wide" role="dialog" aria-modal="true">
+      <button type="button" class="hd-modal-x js-close-plays">×</button>
+      <h2 id="playsTitle">Partie</h2>
+      <div class="hd-plays-body" id="playsBody"></div>
+    </div>
+  </div>
 <?php else: ?>
   <div class="empty card" style="padding:50px 20px">📖 Deník je zatím prázdný. Zapiš první partii!</div>
 <?php endif; ?>

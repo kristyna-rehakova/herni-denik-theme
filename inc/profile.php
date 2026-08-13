@@ -4,13 +4,20 @@
  */
 if (!defined('ABSPATH')) exit;
 
-/** ID hráče přiřazeného přihlášenému uživateli (0 = nepropojeno). */
+/** ID hráče přiřazeného přihlášenému uživateli (párování hlavně přes e-mail). */
 function hd_current_player_id($uid = 0) {
     $uid = $uid ?: get_current_user_id();
     if (!$uid) return 0;
+    // 1) ruční volba (starší způsob)
     $pid = (int) get_user_meta($uid, 'hd_player_id', true);
     if ($pid && get_post_type($pid) === 'hrac') return $pid;
-    // fallback: hráč, který má v profilu nastaveného tohoto uživatele
+    // 2) podle e-mailu hráče == e-mail účtu
+    $u = get_userdata($uid);
+    if ($u && $u->user_email) {
+        $q = get_posts(['post_type' => 'hrac', 'numberposts' => 1, 'meta_key' => 'email', 'meta_value' => $u->user_email, 'fields' => 'ids']);
+        if ($q) return (int) $q[0];
+    }
+    // 3) přes pole wp_user v hráči
     $q = get_posts(['post_type' => 'hrac', 'numberposts' => 1, 'meta_key' => 'wp_user', 'meta_value' => $uid, 'fields' => 'ids']);
     return $q ? (int) $q[0] : 0;
 }

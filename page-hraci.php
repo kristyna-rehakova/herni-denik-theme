@@ -21,8 +21,8 @@ $me_player  = hd_current_player_id(); // svého hráče smí upravit i člen
 
 <?php if ($players): ?>
   <div class="players-grid">
-    <?php foreach ($players as $p): $pid = $p->ID; ?>
-      <div class="player-card">
+    <?php foreach ($players as $p): $pid = $p->ID; $mine = ($me_player && $pid == $me_player); ?>
+      <div class="player-card<?php echo $mine ? ' is-me' : ''; ?>"<?php if ($mine) echo ' title="To jsem já"'; ?>>
         <?php echo hd_player_avatar($pid, 48); ?>
         <div class="who">
           <div class="nick"><?php echo esc_html(hd_player_name($pid)); ?></div>
@@ -30,9 +30,8 @@ $me_player  = hd_current_player_id(); // svého hráče smí upravit i člen
             <div class="name"><?php echo esc_html(get_the_title($pid)); ?></div>
           <?php endif; ?>
         </div>
-        <?php $mine = ($me_player && $pid == $me_player); if ($can_manage || $mine): ?>
+        <?php if ($can_manage || $mine): ?>
           <div class="pl-tools">
-            <?php if ($mine && !$can_manage) echo '<span class="me-tag">to jsem já</span>'; ?>
             <button type="button" class="js-edit-player" data-hd="<?php echo hd_player_edit_json($pid); ?>" title="Upravit">✏️</button>
             <?php if ($can_manage): ?>
               <a class="js-del-player" href="<?php echo esc_url(wp_nonce_url(admin_url('admin-post.php?action=hd_delete_player&id=' . $pid), 'hd_delplayer_' . $pid)); ?>" data-name="<?php echo esc_attr(hd_player_name($pid)); ?>" title="Smazat">🗑️</a>

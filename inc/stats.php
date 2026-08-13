@@ -68,3 +68,28 @@ function hd_compute_stats() {
         'rank'    => $rank,
     ];
 }
+
+/** Osobní statistiky jednoho hráče. */
+function hd_compute_player_stats($hrac_id) {
+    $hrac_id = (int) $hrac_id;
+    $plays = get_posts(['post_type' => 'partie', 'numberposts' => -1, 'fields' => 'ids']);
+    $played = 0; $won = 0; $game_counts = [];
+    foreach ($plays as $pl) {
+        $ps = array_map('intval', (array) get_post_meta($pl, 'players', true));
+        if (!in_array($hrac_id, $ps, true)) continue;
+        $played++;
+        $ws = array_map('intval', (array) get_post_meta($pl, 'winners', true));
+        if (in_array($hrac_id, $ws, true)) $won++;
+        $gid = (int) get_post_meta($pl, 'game', true);
+        if ($gid) $game_counts[$gid] = ($game_counts[$gid] ?? 0) + 1;
+    }
+    arsort($game_counts);
+    $top = [];
+    foreach ($game_counts as $gid => $c) $top[] = ['id' => $gid, 'count' => $c];
+    return [
+        'played'   => $played,
+        'won'      => $won,
+        'winrate'  => $played ? round($won / $played * 100) : 0,
+        'top_games' => array_slice($top, 0, 5),
+    ];
+}

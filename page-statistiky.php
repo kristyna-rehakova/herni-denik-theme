@@ -9,6 +9,37 @@ $s = hd_compute_stats();
 ?>
 <h1 class="page-title">📊 Statistiky</h1>
 
+<?php hd_my_player_selector(); ?>
+
+<?php $me = hd_current_player_id(); ?>
+<?php if ($me): $mp = hd_compute_player_stats($me); ?>
+  <section class="my-stats">
+    <h2>🙋 Moje statistiky – <?php echo esc_html(hd_player_name($me)); ?></h2>
+    <div class="stat-grid">
+      <div class="stat"><span class="num"><?php echo (int)$mp['played']; ?></span><span class="lbl">mých partií</span></div>
+      <div class="stat"><span class="num"><?php echo (int)$mp['won']; ?></span><span class="lbl">výher</span></div>
+      <div class="stat"><span class="num"><?php echo (int)$mp['winrate']; ?>%</span><span class="lbl">úspěšnost</span></div>
+    </div>
+    <?php if ($mp['top_games']): ?>
+      <div class="card stat-box">
+        <h3>🎲 Moje nejhranější hry</h3>
+        <ol class="top-games">
+          <?php foreach ($mp['top_games'] as $tg): ?>
+            <li>
+              <a href="<?php echo esc_url(get_permalink($tg['id'])); ?>">
+                <span class="tg-thumb"><?php echo has_post_thumbnail($tg['id']) ? get_the_post_thumbnail($tg['id'], 'thumbnail') : '🎲'; ?></span>
+                <span class="tg-name"><?php echo esc_html(get_the_title($tg['id'])); ?></span>
+              </a>
+              <span class="tg-count"><?php echo (int)$tg['count']; ?>×</span>
+            </li>
+          <?php endforeach; ?>
+        </ol>
+      </div>
+    <?php endif; ?>
+  </section>
+<?php endif; ?>
+
+<h2 class="overall-title">📊 Celkové statistiky</h2>
 <div class="stat-grid">
   <div class="stat"><span class="num"><?php echo (int)$s['games']; ?></span><span class="lbl">her ve sbírce</span></div>
   <div class="stat"><span class="num"><?php echo (int)$s['plays']; ?></span><span class="lbl">odehraných partií</span></div>

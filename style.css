@@ -5,7 +5,7 @@ GitHub Theme URI: https://github.com/kristyna-rehakova/herni-denik-theme
 Update URI: https://github.com/kristyna-rehakova/herni-denik-theme
 Description: Skupinový deník deskových her — sbírka (Herna), odehrané hry (Deník), hráči. Vlastní typy obsahu + přihlášení a role přes WordPress. Nasazení přes GitHub Updater / WP Pusher.
 Author: Herní deník
-Version: 0.16.1
+Version: 0.17.0
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
@@ -29,13 +29,13 @@ a{color:inherit}
 img{max-width:100%;height:auto}
 
 /* hlavička – zlatavý motiv jako v původním návrhu */
-.site-header{background:linear-gradient(135deg,#FFC125,#F0A400);color:#5a4712;box-shadow:0 3px 14px rgba(180,130,0,.22);position:sticky;top:0;z-index:20;padding:16px 0}
+.site-header{background:linear-gradient(135deg,#FFC125,#F0A400);color:#5a4712;box-shadow:0 3px 14px rgba(180,130,0,.22);position:sticky;top:0;z-index:20;padding:22px 0}
 .site-header .wrap{max-width:1100px;margin:0 auto;padding:0 16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.site-header h1,.site-header a.brand{color:#5a4712;font-size:1.5rem;text-decoration:none;display:flex;align-items:center;gap:10px}
+.site-header h1,.site-header a.brand{color:#5a4712;font-size:1.95rem;text-decoration:none;display:flex;align-items:center;gap:12px}
 .site-header .spacer{flex:1}
-.nav-wrap{max-width:1100px;margin:12px auto 0;padding:0 16px}
-.nav{display:flex;gap:6px;flex-wrap:wrap;list-style:none;margin:0;padding:0}
-.nav a{background:rgba(255,255,255,.5);color:#5a4712;border:1px solid rgba(120,90,0,.15);padding:8px 16px;border-radius:999px;text-decoration:none;font-size:.95rem;transition:.15s}
+.nav-wrap{max-width:1100px;margin:16px auto 0;padding:0 16px}
+.nav{display:flex;gap:10px;flex-wrap:wrap;list-style:none;margin:0;padding:0}
+.nav a{background:rgba(255,255,255,.5);color:#5a4712;border:1px solid rgba(120,90,0,.15);padding:12px 24px;border-radius:999px;text-decoration:none;font-size:1.1rem;font-weight:600;transition:.15s}
 .nav a:hover{background:rgba(255,255,255,.72)}
 .nav .current-menu-item a,.nav .current_page_item a{background:#fff;color:#7a5c10;border-color:#fff;font-weight:600}
 .site-header .userbox{font-size:.85rem;color:#5a4712}
@@ -64,7 +64,9 @@ main{max-width:1100px;margin:22px auto;padding:0 16px 60px}
 .fav-btn{border:none;background:none;cursor:pointer;font-size:1.35rem;color:#b9455f;line-height:1;padding:0 2px;flex:0 0 auto}
 .fav-btn.on{color:#e0245e}
 .fav-btn:hover{transform:scale(1.12)}
-.hd-fav-toggle.active{background:#ffe3ea;border:1px solid #f3b6c6;color:#c0392b}
+.hd-fav-toggle{background:#d6ecfa;color:#2b6a9c}
+.hd-fav-toggle:hover{filter:brightness(.97)}
+.hd-fav-toggle.active{background:#8fc3ea;color:#123f63}
 .game-card .body{padding:12px 14px;display:flex;flex-direction:column;gap:8px;flex:1}
 .game-card h3{font-size:1.1rem}
 .playcount{font-size:.82rem;color:var(--muted)}
@@ -330,6 +332,22 @@ main{max-width:1100px;margin:22px auto;padding:0 16px 60px}
 .desc-part div{white-space:pre-wrap;line-height:1.5}
 .video-embed{position:relative;max-width:720px;aspect-ratio:16/9}
 .video-embed iframe{position:absolute;inset:0;width:100%;height:100%;border-radius:12px}
+
+/* deník – přepínání seskupení + Moje */
+.denik-top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.grp-switch{display:flex;gap:6px}
+.grp-btn{background:#fff;border:1px solid var(--line);border-radius:999px;padding:8px 16px;text-decoration:none;color:var(--muted);font-weight:600;font-size:.9rem}
+.grp-btn.active{background:var(--accent);border-color:var(--accent);color:var(--ink)}
+.denik-top #denikMojeToggle{margin-left:auto}
+/* osobní statistiky */
+.my-stats{margin-bottom:26px}
+.my-stats h2{margin-bottom:12px}
+.my-stats .stat-box{margin-top:14px}
+.my-stats .stat-box h3{margin-bottom:10px}
+.overall-title{margin:8px 0 14px}
+.myplayer-form{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 14px;margin-bottom:18px;box-shadow:var(--shadow)}
+.myplayer-lbl{font-weight:600;color:var(--wood-dark);display:inline-flex;align-items:center;gap:8px}
+.myplayer-lbl select{padding:8px 11px;border:1px solid var(--line);border-radius:10px;font-family:inherit;color:var(--ink)}
 
 /* deník – filtry */
 .denik-filters .dater{display:inline-flex;align-items:center;gap:6px;font-size:.85rem;color:var(--muted)}

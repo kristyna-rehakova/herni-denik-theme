@@ -1,40 +1,78 @@
 <?php
 /**
- * Deník = odehrané hry, seskupeno po dnech (nejnovější nahoře) + filtry.
+ * Deník = odehrané hry. Přepínání seskupení: po dnech / podle her. Filtry + „Moje".
  */
 if (!defined('ABSPATH')) exit;
 get_header();
 
-$plays = new WP_Query([
+$radit = (isset($_GET['radit']) && $_GET['radit'] === 'hry') ? 'hry' : 'dny';
+
+$q = new WP_Query([
     'post_type'      => 'partie',
     'posts_per_page' => -1,
     'meta_key'       => 'play_date',
     'orderby'        => 'meta_value',
     'order'          => 'DESC',
 ]);
-
-$by_day = [];
-if ($plays->have_posts()) {
-    while ($plays->have_posts()) { $plays->the_post();
-        $pid = get_the_ID();
-        $day = hd_meta($pid, 'play_date') ?: get_the_date('Y-m-d');
-        $by_day[$day][] = $pid;
-    }
-    wp_reset_postdata();
-}
-krsort($by_day);
-// v rámci dne seřaď podle ručního pořadí (meta 'ord'), pak podle ID
-foreach ($by_day as $day => &$pids_ref) {
-    usort($pids_ref, function ($a, $b) {
-        $oa = (int) get_post_meta($a, 'ord', true);
-        $ob = (int) get_post_meta($b, 'ord', true);
-        return $oa <=> $ob ?: $a <=> $b;
-    });
-}
-unset($pids_ref);
+$all_pids = [];
+if ($q->have_posts()) { while ($q->have_posts()) { $q->the_post(); $all_pids[] = get_the_ID(); } wp_reset_postdata(); }
 
 $all_players = hd_all_players();
 $all_games   = hd_all_games();
+
+// řádek partie (sdílené pro obě seskupení)
+if (!function_exists('hd_render_play_row')) {
+    function hd_render_play_row($pid, $with_arrows, $show_game = true) {
+        $gid = (int) hd_meta($pid, 'game');
+        $players = array_map('intval', (array) hd_meta($pid, 'players', []));
+        $winners = array_map('intval', (array) hd_meta($pid, 'winners', []));
+        $ext_players = (array) hd_meta($pid, 'ext_players', []);
+        $ext_winners = (array) hd_meta($pid, 'ext_winners', []);
+        $note = hd_meta($pid, 'note');
+        $pnames = array_merge(array_map('hd_player_name', $players), $ext_players);
+        $wnames = array_merge(array_map('hd_player_name', $winners), $ext_winners);
+        ?>
+        <div class="play-row2" id="p<?php echo $pid; ?>"
+             data-players="<?php echo esc_attr(implode(',', $players)); ?>"
+             data-winners="<?php echo esc_attr(implode(',', $winners)); ?>"
+             data-game="<?php echo $gid; ?>"
+             data-date="<?php echo esc_attr(hd_meta($pid, 'play_date')); ?>">
+          <?php if ($show_game && $gid): ?>
+            <a class="play-thumb" href="<?php echo esc_url(get_permalink($gid)); ?>"><?php echo hd_cover_inner($gid); ?></a>
+          <?php elseif ($show_game): ?>
+            <div class="play-thumb">🎲</div>
+          <?php endif; ?>
+          <div class="info">
+            <?php if ($show_game): ?>
+              <?php if ($gid): ?>
+                <a class="play-name" href="<?php echo esc_url(get_permalink($gid)); ?>"><?php echo esc_html(get_the_title($gid)); ?></a>
+              <?php else: ?>
+                <span class="play-name">(smazaná hra)</span>
+              <?php endif; ?>
+            <?php else: ?>
+              <span class="play-name"><?php echo esc_html(hd_format_day(hd_meta($pid, 'play_date'))); ?></span>
+            <?php endif; ?>
+            <?php if ($pnames) echo '<div class="pl-line">👥 ' . esc_html(implode(', ', $pnames)) . '</div>'; ?>
+            <?php if ($wnames) echo '<div class="win-line">🏆 ' . esc_html(implode(', ', $wnames)) . '</div>'; ?>
+            <?php $pexps = (array) hd_meta($pid, 'play_expansions', []); if ($pexps) echo '<div class="pexp-line">🧩 ' . esc_html(implode(', ', $pexps)) . '</div>'; ?>
+            <?php if ($note) echo '<div class="pnote">📝 ' . nl2br(esc_html($note)) . '</div>'; ?>
+          </div>
+          <?php if (current_user_can('edit_post', $pid)): ?>
+            <div class="play-actions">
+              <button type="button" class="icon-btn ic-edit js-edit-play" data-hd="<?php echo hd_play_edit_json($pid); ?>" title="Upravit">✏️</button>
+              <a class="icon-btn ic-del js-del-play" href="<?php echo esc_url(wp_nonce_url(admin_url('admin-post.php?action=hd_delete_play&id=' . $pid), 'hd_delplay_' . $pid)); ?>" data-name="<?php echo esc_attr($gid ? get_the_title($gid) : 'partii'); ?>" title="Smazat">🗑️</a>
+            </div>
+            <?php if ($with_arrows): ?>
+              <div class="play-arrows">
+                <a href="<?php echo esc_url(wp_nonce_url(admin_url('admin-post.php?action=hd_move_play&dir=up&id=' . $pid), 'hd_moveplay_' . $pid)); ?>" title="Nahoru">↑</a>
+                <a href="<?php echo esc_url(wp_nonce_url(admin_url('admin-post.php?action=hd_move_play&dir=down&id=' . $pid), 'hd_moveplay_' . $pid)); ?>" title="Dolů">↓</a>
+              </div>
+            <?php endif; ?>
+          <?php endif; ?>
+        </div>
+        <?php
+    }
+}
 ?>
 <?php if (isset($_GET['hd_play'])): ?>
   <?php if ($_GET['hd_play'] === 'ok'): ?>
@@ -52,7 +90,17 @@ $all_games   = hd_all_games();
 
 <h1 class="page-title">📖 Odehrané hry</h1>
 
-<?php if ($by_day): ?>
+<?php if ($all_pids): ?>
+  <div class="denik-top">
+    <div class="grp-switch">
+      <a class="grp-btn <?php echo $radit === 'dny' ? 'active' : ''; ?>" href="<?php echo esc_url(add_query_arg('radit', 'dny')); ?>">📅 Po dnech</a>
+      <a class="grp-btn <?php echo $radit === 'hry' ? 'active' : ''; ?>" href="<?php echo esc_url(add_query_arg('radit', 'hry')); ?>">🎲 Podle her</a>
+    </div>
+    <?php if (is_user_logged_in()): ?>
+      <button type="button" id="denikMojeToggle" class="btn hd-fav-toggle">♥ Moje</button>
+    <?php endif; ?>
+  </div>
+
   <div class="toolbar card denik-filters">
     <select id="fPlayer" aria-label="Hráč">
       <option value="">Hráč</option>
@@ -71,54 +119,39 @@ $all_games   = hd_all_games();
   </div>
 
   <div id="denikList">
-  <?php foreach ($by_day as $day => $pids): ?>
-    <section class="day" data-day="<?php echo esc_attr($day); ?>">
-      <h2 class="day-head"><?php echo esc_html(hd_format_day($day)); ?> <span class="day-count"><?php echo count($pids); ?>×</span></h2>
-      <?php foreach ($pids as $pid):
-        $gid = (int) hd_meta($pid, 'game');
-        $players = array_map('intval', (array) hd_meta($pid, 'players', []));
-        $winners = array_map('intval', (array) hd_meta($pid, 'winners', []));
-        $ext_players = (array) hd_meta($pid, 'ext_players', []);
-        $ext_winners = (array) hd_meta($pid, 'ext_winners', []);
-        $note = hd_meta($pid, 'note');
-        $pnames = array_merge(array_map('hd_player_name', $players), $ext_players);
-        $wnames = array_merge(array_map('hd_player_name', $winners), $ext_winners);
-      ?>
-        <div class="play-row2" id="p<?php echo $pid; ?>"
-             data-players="<?php echo esc_attr(implode(',', $players)); ?>"
-             data-winners="<?php echo esc_attr(implode(',', $winners)); ?>"
-             data-game="<?php echo (int)$gid; ?>"
-             data-date="<?php echo esc_attr(hd_meta($pid, 'play_date')); ?>">
-          <?php if ($gid): ?>
-            <a class="play-thumb" href="<?php echo esc_url(get_permalink($gid)); ?>"><?php echo hd_cover_inner($gid); ?></a>
-          <?php else: ?>
-            <div class="play-thumb">🎲</div>
-          <?php endif; ?>
-          <div class="info">
-            <?php if ($gid): ?>
-              <a class="play-name" href="<?php echo esc_url(get_permalink($gid)); ?>"><?php echo esc_html(get_the_title($gid)); ?></a>
-            <?php else: ?>
-              <span class="play-name">(smazaná hra)</span>
-            <?php endif; ?>
-            <?php if ($pnames) echo '<div class="pl-line">👥 ' . esc_html(implode(', ', $pnames)) . '</div>'; ?>
-            <?php if ($wnames) echo '<div class="win-line">🏆 ' . esc_html(implode(', ', $wnames)) . '</div>'; ?>
-            <?php $pexps = (array) hd_meta($pid, 'play_expansions', []); if ($pexps) echo '<div class="pexp-line">🧩 ' . esc_html(implode(', ', $pexps)) . '</div>'; ?>
-            <?php if ($note) echo '<div class="pnote">📝 ' . nl2br(esc_html($note)) . '</div>'; ?>
-          </div>
-          <?php if (current_user_can('edit_post', $pid)): ?>
-            <div class="play-actions">
-              <button type="button" class="icon-btn ic-edit js-edit-play" data-hd="<?php echo hd_play_edit_json($pid); ?>" title="Upravit">✏️</button>
-              <a class="icon-btn ic-del js-del-play" href="<?php echo esc_url(wp_nonce_url(admin_url('admin-post.php?action=hd_delete_play&id=' . $pid), 'hd_delplay_' . $pid)); ?>" data-name="<?php echo esc_attr($gid ? get_the_title($gid) : 'partii'); ?>" title="Smazat">🗑️</a>
-            </div>
-            <div class="play-arrows">
-              <a href="<?php echo esc_url(wp_nonce_url(admin_url('admin-post.php?action=hd_move_play&dir=up&id=' . $pid), 'hd_moveplay_' . $pid)); ?>" title="Nahoru">↑</a>
-              <a href="<?php echo esc_url(wp_nonce_url(admin_url('admin-post.php?action=hd_move_play&dir=down&id=' . $pid), 'hd_moveplay_' . $pid)); ?>" title="Dolů">↓</a>
-            </div>
-          <?php endif; ?>
-        </div>
-      <?php endforeach; ?>
-    </section>
-  <?php endforeach; ?>
+  <?php if ($radit === 'dny'):
+    // seskupení po dnech
+    $by_day = [];
+    foreach ($all_pids as $pid) { $day = hd_meta($pid, 'play_date') ?: get_the_date('Y-m-d', $pid); $by_day[$day][] = $pid; }
+    krsort($by_day);
+    foreach ($by_day as $day => $pids) {
+        usort($pids, function ($a, $b) {
+            $oa = (int) get_post_meta($a, 'ord', true); $ob = (int) get_post_meta($b, 'ord', true);
+            return $oa <=> $ob ?: $a <=> $b;
+        });
+    }
+    foreach ($by_day as $day => $pids): ?>
+      <section class="day">
+        <h2 class="day-head"><?php echo esc_html(hd_format_day($day)); ?> <span class="day-count"><?php echo count($pids); ?>×</span></h2>
+        <?php foreach ($pids as $pid) hd_render_play_row($pid, true, true); ?>
+      </section>
+    <?php endforeach;
+  else:
+    // seskupení podle her (nejhranější nahoře)
+    $by_game = [];
+    foreach ($all_pids as $pid) { $gid = (int) hd_meta($pid, 'game'); $by_game[$gid][] = $pid; }
+    uasort($by_game, function ($a, $b) { return count($b) - count($a); });
+    foreach ($by_game as $gid => $pids):
+      $gname = $gid ? get_the_title($gid) : '(smazaná hra)'; ?>
+      <section class="day">
+        <h2 class="day-head">
+          <?php if ($gid): ?><a href="<?php echo esc_url(get_permalink($gid)); ?>" style="text-decoration:none"><?php echo esc_html($gname); ?></a><?php else: ?><?php echo esc_html($gname); ?><?php endif; ?>
+          <span class="day-count"><?php echo count($pids); ?>×</span>
+        </h2>
+        <?php foreach ($pids as $pid) hd_render_play_row($pid, false, false); ?>
+      </section>
+    <?php endforeach;
+  endif; ?>
   </div>
   <p class="hd-noresult" id="denikEmpty" hidden>Žádná partie neodpovídá filtru.</p>
 <?php else: ?>

@@ -14,6 +14,7 @@ function hd_front_assets() {
             'parseNonce' => wp_create_nonce('hd_import_parse'),
             'favNonce'   => wp_create_nonce('hd_fav'),
             'expansions' => hd_all_expansions(),
+            'myPlayer'   => hd_current_player_id(),
         ]);
     }
 }

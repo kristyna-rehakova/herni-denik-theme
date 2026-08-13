@@ -629,6 +629,8 @@
   if (denik) {
     var rows = Array.prototype.slice.call(denik.querySelectorAll('.play-row2'));
     var fP = gfEl('fPlayer'), fW = gfEl('fWinner'), fG = gfEl('fGame'), fFrom = gfEl('fFrom'), fTo = gfEl('fTo');
+    var mojeToggle = document.getElementById('denikMojeToggle');
+    var mojeOnly = false;
     function idlist(s) { return (s || '').split(',').filter(Boolean); }
     function applyDenik() {
       rows.forEach(function (r) {
@@ -638,6 +640,7 @@
         if (fG && fG.value && r.dataset.game !== fG.value) ok = false;
         if (fFrom && fFrom.value && r.dataset.date && r.dataset.date < fFrom.value) ok = false;
         if (fTo && fTo.value && r.dataset.date && r.dataset.date > fTo.value) ok = false;
+        if (mojeOnly && typeof HD !== 'undefined' && HD.myPlayer && idlist(r.dataset.players).indexOf(String(HD.myPlayer)) === -1) ok = false;
         r.style.display = ok ? '' : 'none';
       });
       var anyVisible = false;
@@ -651,6 +654,17 @@
       var empty = gfEl('denikEmpty'); if (empty) empty.hidden = anyVisible;
     }
     [fP, fW, fG, fFrom, fTo].forEach(function (el) { if (el) { el.addEventListener('change', applyDenik); el.addEventListener('input', applyDenik); } });
+    if (mojeToggle) {
+      mojeToggle.addEventListener('click', function () {
+        if (!mojeOnly && (typeof HD === 'undefined' || !HD.myPlayer)) {
+          alert('Nejdřív si na stránce Statistiky nastav, který jsi hráč (🙋 Já jsem hráč).');
+          return;
+        }
+        mojeOnly = !mojeOnly;
+        mojeToggle.classList.toggle('active', mojeOnly);
+        applyDenik();
+      });
+    }
   }
 
   /* ---------- POTVRZENÍ SMAZÁNÍ (hra / hráč / partie) ---------- */

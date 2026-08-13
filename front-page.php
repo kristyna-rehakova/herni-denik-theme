@@ -36,7 +36,7 @@ $total = $games->post_count;
 
 <?php if (is_user_logged_in()): ?>
   <div class="topbtns">
-    <button type="button" id="hdFavToggle" class="btn big secondary hd-fav-toggle">♥ Moje hry</button>
+    <button type="button" id="hdFavToggle" class="btn big hd-fav-toggle">♥ Moje hry</button>
     <?php if (current_user_can('edit_posts')): ?>
       <button type="button" class="btn big js-open-gameform">♟️ Přidat deskovku</button>
       <button type="button" class="btn big secondary js-open-import">📋 Import</button>

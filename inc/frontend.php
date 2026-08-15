@@ -252,7 +252,7 @@ function hd_handle_move_play() {
     $ids = get_posts(['post_type' => 'partie', 'numberposts' => -1, 'meta_key' => 'play_date', 'meta_value' => $day, 'fields' => 'ids']);
     usort($ids, function ($a, $b) {
         $oa = (int) get_post_meta($a, 'ord', true); $ob = (int) get_post_meta($b, 'ord', true);
-        return $oa <=> $ob ?: $a <=> $b;
+        return $oa <=> $ob ?: $b <=> $a; // stejné pořadí jako v deníku (poslední nahoře)
     });
     $idx = array_search($id, $ids, true);
     $swap = ($dir === 'up') ? $idx - 1 : $idx + 1;

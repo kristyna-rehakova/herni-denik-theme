@@ -140,11 +140,11 @@ if (!function_exists('hd_render_play_row')) {
     $by_day = [];
     foreach ($all_pids as $pid) { $day = hd_meta($pid, 'play_date') ?: get_the_date('Y-m-d', $pid); $by_day[$day][] = $pid; }
     krsort($by_day);
-    // uvnitř dne: ručně přeřazené (ord) mají přednost, jinak v pořadí zápisu (ID vzestupně)
+    // uvnitř dne: ručně přeřazené (ord) mají přednost, jinak poslední přidaná nahoře (ID sestupně)
     foreach ($by_day as $day => &$pids_ref) {
         usort($pids_ref, function ($a, $b) {
             $oa = (int) get_post_meta($a, 'ord', true); $ob = (int) get_post_meta($b, 'ord', true);
-            return $oa <=> $ob ?: $a <=> $b;
+            return $oa <=> $ob ?: $b <=> $a;
         });
     }
     unset($pids_ref);

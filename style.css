@@ -5,7 +5,7 @@ GitHub Theme URI: https://github.com/kristyna-rehakova/herni-denik-theme
 Update URI: https://github.com/kristyna-rehakova/herni-denik-theme
 Description: Skupinový deník deskových her — sbírka (Herna), odehrané hry (Deník), hráči. Vlastní typy obsahu + přihlášení a role přes WordPress. Nasazení přes GitHub Updater / WP Pusher.
 Author: Herní deník
-Version: 0.25.4
+Version: 0.26.0
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
@@ -35,7 +35,8 @@ img{max-width:100%;height:auto}
 .site-header .spacer{flex:1}
 .nav-wrap{max-width:1100px;margin:16px auto 0;padding:0 16px}
 .nav{display:flex;gap:10px;flex-wrap:wrap;list-style:none;margin:0;padding:0}
-.nav a{background:rgba(255,255,255,.5);color:#5a4712;border:1px solid rgba(120,90,0,.15);padding:12px 26px;border-radius:12px;text-decoration:none;font-size:1.45rem;font-weight:600;transition:.15s}
+.nav li{display:flex}
+.nav a{display:block;background:rgba(255,255,255,.5);color:#5a4712;border:1px solid rgba(120,90,0,.15);padding:12px 26px;border-radius:12px;text-decoration:none;font-size:1.45rem;font-weight:600;transition:.15s;white-space:nowrap}
 .nav a:hover{background:rgba(255,255,255,.72)}
 .nav .current-menu-item a,.nav .current_page_item a{background:#fff;color:#7a5c10;border-color:#fff;font-weight:700}
 .site-header .userbox{font-size:.85rem;color:#5a4712}
@@ -127,7 +128,7 @@ main{max-width:1100px;margin:22px auto;padding:0 16px 60px}
 .hd-modal-card h2{margin-bottom:16px}
 .hd-modal-x{position:absolute;top:10px;right:14px;border:none;background:none;font-size:1.8rem;line-height:1;cursor:pointer;color:var(--muted)}
 .hd-fld{display:flex;flex-direction:column;gap:5px;font-size:.9rem;font-weight:600;color:var(--muted);margin-bottom:14px}
-.hd-fld input,.hd-fld select,.hd-fld textarea{padding:9px 12px;border:1px solid var(--line);border-radius:10px;font-family:inherit;font-size:.95rem;color:var(--ink);font-weight:400}
+.hd-fld input,.hd-fld select,.hd-fld textarea{padding:9px 12px;border:1px solid var(--line);border-radius:10px;font-family:inherit;font-size:.95rem;color:var(--ink);font-weight:400;width:100%;min-width:0;max-width:100%}
 .hd-fld legend{margin-bottom:8px}
 .hd-players{display:flex;flex-direction:column;gap:4px;max-height:260px;overflow:auto}
 .hd-prow{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:5px 8px;border:1px solid var(--line);border-radius:10px;font-weight:400}
@@ -142,6 +143,7 @@ main{max-width:1100px;margin:22px auto;padding:0 16px 60px}
 /* formulář hry */
 .hd-modal-wide{max-width:640px}
 .gf-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 14px}
+.gf-grid>*{min-width:0}
 .imp-changed{border-color:#3f9a52 !important;box-shadow:0 0 0 2px rgba(63,154,82,.30) !important;background:#f2fbf2 !important}
 /* externí hosté v partii */
 .ext-av{background:#b0a89c}
@@ -436,3 +438,29 @@ main{max-width:1100px;margin:22px auto;padding:0 16px 60px}
 .pdate{color:var(--muted);font-size:.85rem;min-width:90px}
 .edit-link{position:absolute;top:0;right:0;text-decoration:none;opacity:.6;border:none;background:none;cursor:pointer;font-size:1rem;padding:2px}
 .edit-link:hover{opacity:1}
+
+/* ============ MOBIL ============ */
+@media(max-width:560px){
+  /* hlavička */
+  .site-header{padding:16px 0}
+  .site-header h1,.site-header a.brand{font-size:1.7rem;gap:8px}
+  .nav-wrap{margin-top:12px}
+
+  /* menu 2×2, stejně velké dlaždice, bez překrývání */
+  .nav{gap:8px}
+  .nav li{flex:1 1 calc(50% - 4px)}
+  .nav a{width:100%;text-align:center;padding:12px 8px;font-size:1.15rem;white-space:normal}
+
+  /* formulář hry / partie – jeden sloupec, ať nic nepřetéká */
+  .gf-grid{grid-template-columns:1fr}
+  .hd-modal{padding:16px 10px}
+  .hd-modal-card{padding:18px 16px}
+
+  /* řádek partie v Deníku – poznámka na vlastní řádek pod hráče (ať se nepřekrývá) */
+  .play-row2{flex-wrap:wrap;gap:8px 10px}
+  .play-row2 .info{flex:1 1 auto;min-width:0}
+  .pnote-box{order:8;flex:1 1 100%;max-width:none;align-self:stretch}
+
+  /* karty her v mřížce – více prostoru */
+  .grid{grid-template-columns:1fr}
+}

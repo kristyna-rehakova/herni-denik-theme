@@ -5,7 +5,7 @@ GitHub Theme URI: https://github.com/kristyna-rehakova/herni-denik-theme
 Update URI: https://github.com/kristyna-rehakova/herni-denik-theme
 Description: Skupinový deník deskových her — sbírka (Herna), odehrané hry (Deník), hráči. Vlastní typy obsahu + přihlášení a role přes WordPress. Nasazení přes GitHub Updater / WP Pusher.
 Author: Herní deník
-Version: 0.27.1
+Version: 0.28.0
 Requires at least: 6.0
 Tested up to: 6.7
 Requires PHP: 7.4
@@ -373,6 +373,27 @@ main{max-width:1100px;margin:22px auto;padding:0 16px 60px}
 .acc-m-name{font-weight:600}
 .acc-m-login{color:var(--accent-2)}
 .acc-m-mail{color:var(--muted)}
+/* To Do */
+.todo-ind{font-size:.9em;margin-right:1px}
+.todo-ind.bad{filter:saturate(1.2)}
+.todo-sec{margin:22px 0 10px;font-size:1.15rem}
+.todo-sec-done{color:var(--muted)}
+.todo-item{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;padding:14px 16px;margin-bottom:10px}
+.todo-item.is-done{opacity:.62}
+.todo-item.is-done .todo-desc{text-decoration:line-through}
+.todo-main{display:flex;gap:12px;flex:1;min-width:0}
+.todo-status{font-size:1.15rem;flex:0 0 auto;line-height:1.3}
+.todo-body{min-width:0;flex:1}
+.todo-desc{color:var(--ink);white-space:pre-wrap;word-break:break-word}
+.todo-meta{font-size:.8rem;color:var(--muted);margin-top:4px}
+.todo-photo{display:inline-block;margin-top:8px}
+.todo-photo img{max-width:220px;max-height:220px;border-radius:10px;border:1px solid var(--line)}
+.todo-tools{display:flex;flex-direction:column;gap:6px;flex:0 0 auto}
+@media(max-width:560px){
+  .todo-item{flex-direction:column}
+  .todo-tools{flex-direction:row;width:100%}
+  .todo-photo img{max-width:100%}
+}
 /* nahoru */
 .to-top-row{text-align:right;margin-top:16px}
 #toTop{position:fixed;right:max(16px,calc(50% - 572px));bottom:24px;width:52px;height:52px;border-radius:50%;border:none;background:var(--accent-2);color:#fff;font-size:1.5rem;cursor:pointer;box-shadow:0 4px 14px rgba(50,60,35,.3);z-index:60;display:flex;align-items:center;justify-content:center;transition:.15s}

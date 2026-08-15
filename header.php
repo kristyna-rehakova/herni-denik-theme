@@ -14,7 +14,16 @@
     <div class="spacer"></div>
     <span class="userbox">
       <?php if (is_user_logged_in()): $u = wp_get_current_user(); ?>
-        <?php echo esc_html($u->display_name); ?> · <a href="<?php echo esc_url(function_exists('hd_ucet_url') ? hd_ucet_url() : home_url('/')); ?>">⚙️ Můj účet</a> · <a href="<?php echo esc_url(wp_logout_url(home_url('/'))); ?>">Odhlásit</a>
+        <?php echo esc_html($u->display_name); ?>
+        <?php if (function_exists('hd_todo_url')):
+          $todo_open = function_exists('hd_todo_open_count') ? hd_todo_open_count() : 0;
+          $todo_ind = $todo_open > 0
+            ? '<span class="todo-ind bad" title="' . (int) $todo_open . ' nevyřešených úkolů">❗</span>'
+            : '<span class="todo-ind ok" title="Vše vyřešeno">✔️</span>';
+        ?>
+          · <a href="<?php echo esc_url(hd_todo_url()); ?>"><?php echo $todo_ind; ?> To Do</a>
+        <?php endif; ?>
+        · <a href="<?php echo esc_url(function_exists('hd_ucet_url') ? hd_ucet_url() : home_url('/')); ?>">⚙️ Můj účet</a> · <a href="<?php echo esc_url(wp_logout_url(home_url('/'))); ?>">Odhlásit</a>
       <?php else: ?>
         <a href="<?php echo esc_url(wp_login_url()); ?>">Přihlásit</a>
       <?php endif; ?>

@@ -49,12 +49,14 @@ function hd_expansion_modals() {
       <div class="hd-modal-card hd-modal-wide" role="dialog" aria-modal="true">
         <button type="button" class="hd-modal-x js-close-exp">×</button>
         <h2 id="expTitle">Nové rozšíření</h2>
+        <p class="hd-mobile-note">📋 Import vložením obsahu stránky funguje jen na počítači (nebo tabletu s klávesnicí). Na mobilu stačí vyplnit <strong>Název</strong> a <strong>Odkaz na Zatrolené</strong> – obrázek se načte sám. Můžeš přidat i vlastní <strong>URL obrázku</strong>.</p>
         <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
           <input type="hidden" name="action" value="hd_save_expansion">
           <?php wp_nonce_field('hd_save_expansion', 'hd_exp_nonce'); ?>
           <input type="hidden" name="game" id="expGame">
           <input type="hidden" name="idx" id="expIdx" value="-1">
           <label class="hd-fld">Název<input type="text" name="name" id="expName" required></label>
+          <label class="hd-fld">Odkaz na Zatrolené <span class="hd-hint">(načte obrázek rozšíření)</span><input type="url" name="exp_url" id="expUrl" placeholder="https://www.zatrolene-hry.cz/…"></label>
           <div class="gf-grid">
             <label class="hd-fld">Rok<input type="number" name="year" id="expYear"></label>
             <label class="hd-fld">URL obrázku<input type="text" name="image_url" id="expImg" placeholder="https://…"></label>
@@ -99,6 +101,11 @@ function hd_handle_save_expansion() {
 
     $img_att = ($idx >= 0 && isset($exps[$idx]['image'])) ? (int) $exps[$idx]['image'] : 0;
     $img_url = trim(wp_unslash($_POST['image_url'] ?? ''));
+    // když není přímá URL obrázku, ale je odkaz na Zatrolené, zkus z něj vytáhnout obálku
+    if (!$img_url && !$img_att) {
+        $exp_url = trim(wp_unslash($_POST['exp_url'] ?? ''));
+        if ($exp_url && function_exists('hd_resolve_zatrolene_cover')) $img_url = hd_resolve_zatrolene_cover($exp_url);
+    }
     if ($img_url) {
         require_once ABSPATH . 'wp-admin/includes/media.php';
         require_once ABSPATH . 'wp-admin/includes/file.php';

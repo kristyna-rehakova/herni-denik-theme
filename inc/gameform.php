@@ -16,6 +16,7 @@ function hd_game_form_modal() {
           <h2 id="gfTitle">Nová hra</h2>
           <button type="button" class="btn small ghost js-open-import" title="Doplnit údaje vložením obsahu stránky">📋 Import</button>
         </div>
+        <p class="hd-mobile-note">📋 Import vložením obsahu stránky funguje jen na počítači (nebo tabletu s klávesnicí). Na mobilu stačí vyplnit <strong>Název</strong> a <strong>Odkaz na Zatrolené</strong> – obrázek se načte sám. Můžeš přidat i vlastní <strong>URL obrázku</strong>.</p>
         <form method="post" action="<?php echo esc_url(admin_url('admin-post.php')); ?>">
           <input type="hidden" name="action" value="hd_save_game">
           <?php wp_nonce_field('hd_save_game', 'hd_game_nonce'); ?>

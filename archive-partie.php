@@ -10,9 +10,9 @@ $radit = (isset($_GET['radit']) && $_GET['radit'] === 'hry') ? 'hry' : 'dny';
 $q = new WP_Query([
     'post_type'      => 'partie',
     'posts_per_page' => -1,
-    'meta_key'       => 'play_date',
-    'orderby'        => 'meta_value',
+    'orderby'        => 'date',   // ber všechny partie (i bez meta play_date); uvnitř dne se řadí zvlášť
     'order'          => 'DESC',
+    'no_found_rows'  => true,
 ]);
 $all_pids = [];
 if ($q->have_posts()) { while ($q->have_posts()) { $q->the_post(); $all_pids[] = get_the_ID(); } wp_reset_postdata(); }
@@ -140,12 +140,14 @@ if (!function_exists('hd_render_play_row')) {
     $by_day = [];
     foreach ($all_pids as $pid) { $day = hd_meta($pid, 'play_date') ?: get_the_date('Y-m-d', $pid); $by_day[$day][] = $pid; }
     krsort($by_day);
-    foreach ($by_day as $day => $pids) {
-        usort($pids, function ($a, $b) {
+    // uvnitř dne: ručně přeřazené (ord) mají přednost, jinak v pořadí zápisu (ID vzestupně)
+    foreach ($by_day as $day => &$pids_ref) {
+        usort($pids_ref, function ($a, $b) {
             $oa = (int) get_post_meta($a, 'ord', true); $ob = (int) get_post_meta($b, 'ord', true);
             return $oa <=> $ob ?: $a <=> $b;
         });
     }
+    unset($pids_ref);
     foreach ($by_day as $day => $pids): ?>
       <section class="day day-card">
         <h2 class="day-head"><?php echo esc_html(hd_format_day($day)); ?> <span class="day-count"><?php echo count($pids); ?>×</span></h2>

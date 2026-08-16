@@ -19,6 +19,7 @@ function hd_section_expansions($id) {
         <?php endif; ?>
       </div>
       <?php if ($exps): foreach ($exps as $i => $ex):
+        if (!is_array($ex) || trim((string)($ex['name'] ?? '')) === '') continue; // přeskoč prázdné/porouchané řádky
         $img = !empty($ex['image']) ? wp_get_attachment_image_url((int) $ex['image'], 'thumbnail') : '';
       ?>
         <div class="exp-card card">
@@ -120,7 +121,9 @@ function hd_handle_save_expansion() {
         'image' => $img_att,
     ];
     if ($idx >= 0 && isset($exps[$idx])) $exps[$idx] = $entry; else $exps[] = $entry;
-    update_post_meta($gid, 'expansions', array_values($exps));
+    // pročisti pole – vyhoď prázdné/porouchané záznamy bez názvu
+    $exps = array_values(array_filter($exps, function ($e) { return is_array($e) && trim((string)($e['name'] ?? '')) !== ''; }));
+    update_post_meta($gid, 'expansions', $exps);
     wp_safe_redirect(get_permalink($gid) . '#rozsireni'); exit;
 }
 add_action('admin_post_hd_save_expansion', 'hd_handle_save_expansion');

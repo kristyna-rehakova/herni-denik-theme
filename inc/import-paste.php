@@ -53,7 +53,17 @@ function hd_z_desc($text) {
             if (preg_match($h[1], $l) && !in_array($h[0], array_column($found, 'key'), true)) { $found[] = ['key' => $h[0], 'line' => $i]; break; }
         }
     }
-    if (!$found) return null;
+    if (!$found) {
+        // Žádné strukturované sekce (Příprava/Průběh/Konec) – vezmi obecný „Popis hry" a vlož ho celý do Průběhu.
+        $iP = -1;
+        foreach ($lines as $i => $l) { if (preg_match('/^Popis hry\s*:?$/iu', $l)) { $iP = $i; break; } }
+        if ($iP < 0) return null;
+        $STOP2 = '/^(Autor\b|Design|Ilustr|Rozší[řr]en[íi] hry|Dal[šs][íi] n[áa]zvy|Vyb[íi]r[áa]me z Bazaru|Nejnov[ěe]j|Kde se disku|Velk[ée] hern|O Zatrolen|Celkov[ée] hodnocen|N[áa]hled hry|Sd[íi]lej)/iu';
+        $start = $iP + 1; $end = count($lines);
+        for ($j = $start; $j < count($lines); $j++) { if ($lines[$j] !== '' && preg_match($STOP2, $lines[$j])) { $end = $j; break; } }
+        $chunk = trim(preg_replace('/\n{3,}/', "\n\n", implode("\n", array_slice($rawLines, $start, $end - $start))));
+        return $chunk !== '' ? ['prubeh' => $chunk] : null;
+    }
     usort($found, function ($a, $b) { return $a['line'] - $b['line']; });
     $out = [];
     for ($i = 0; $i < count($found); $i++) {

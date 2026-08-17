@@ -206,6 +206,17 @@ function hd_all_expansions() {
     return $out;
 }
 
+/** Je přezdívka už použitá u jiného hráče? (bez ohledu na velikost písmen) */
+function hd_nick_taken($nick, $exclude_pid = 0) {
+    $nick = trim(mb_strtolower((string) $nick));
+    if ($nick === '') return false;
+    foreach (get_posts(['post_type' => 'hrac', 'numberposts' => -1, 'fields' => 'ids', 'post_status' => 'publish']) as $pid) {
+        if ((int) $pid === (int) $exclude_pid) continue;
+        if (trim(mb_strtolower((string) get_post_meta($pid, 'nick', true))) === $nick) return true;
+    }
+    return false;
+}
+
 /** Seznam všech hráčů jako [id => zobrazované jméno] (abecedně dle jména). */
 function hd_all_players() {
     $out = [];

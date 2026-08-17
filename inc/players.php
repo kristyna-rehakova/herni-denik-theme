@@ -98,6 +98,8 @@ function hd_handle_save_player() {
     $pid  = intval($_POST['player_id'] ?? 0);
     $name = sanitize_text_field(wp_unslash($_POST['name'] ?? ''));
     if ($name === '') { wp_safe_redirect($back); exit; }
+    $nick = sanitize_text_field(wp_unslash($_POST['nick'] ?? ''));
+    if ($nick !== '' && hd_nick_taken($nick, $pid)) { wp_safe_redirect(add_query_arg('hd_pl', 'nickdup', $back)); exit; }
 
     if ($pid && get_post_type($pid) === 'hrac') {
         if (!hd_can_manage() && $pid != hd_current_player_id()) wp_die('Upravit můžeš jen svého hráče.');
@@ -107,7 +109,7 @@ function hd_handle_save_player() {
     }
     if (is_wp_error($pid) || !$pid) { wp_safe_redirect($back); exit; }
 
-    update_post_meta($pid, 'nick', sanitize_text_field(wp_unslash($_POST['nick'] ?? '')));
+    update_post_meta($pid, 'nick', $nick);
     update_post_meta($pid, 'color', sanitize_hex_color(wp_unslash($_POST['color'] ?? '')) ?: '#eeb088');
     update_post_meta($pid, 'emoji', sanitize_text_field(wp_unslash($_POST['emoji'] ?? '')));
     if (hd_can_manage() && isset($_POST['email'])) update_post_meta($pid, 'email', sanitize_email(wp_unslash($_POST['email'])));

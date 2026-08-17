@@ -48,8 +48,9 @@ function hd_handle_update_account() {
 
     // 1) přezdívka – smí měnit každý (svoji) a propíše se do jeho hráče
     if ($nickname !== '') {
-        $upd['nickname'] = $nickname;
         $pid = hd_current_player_id($user->ID);
+        if (hd_nick_taken($nickname, $pid)) { wp_safe_redirect(add_query_arg('hd_acc', 'nicktaken', $back)); exit; }
+        $upd['nickname'] = $nickname;
         if ($pid) update_post_meta($pid, 'nick', $nickname);
     }
 
@@ -120,6 +121,8 @@ function hd_handle_add_member() {
             if ($pid && !is_wp_error($pid)) {
                 update_post_meta($pid, 'email', $email);
                 update_post_meta($pid, 'color', '#eeb088');
+                // přezdívka = uživatelské jméno (ať není prázdná); dotyčný si ji může změnit
+                if (!hd_nick_taken($login)) update_post_meta($pid, 'nick', $login);
             }
         }
     }
@@ -166,6 +169,9 @@ function hd_send_member_email($to, $name, $login, $pass) {
     <p>Hezké hraní! 🎲</p>
   </div>
 </div>';
+    $host = preg_replace('/^www\./', '', (string) wp_parse_url($home, PHP_URL_HOST));
+    $from = $host ? 'Můj herní deník <wordpress@' . $host . '>' : '';
     $headers = ['Content-Type: text/html; charset=UTF-8'];
+    if ($from) $headers[] = 'From: ' . $from;
     return wp_mail($to, $subject, $html, $headers);
 }

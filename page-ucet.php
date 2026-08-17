@@ -20,6 +20,7 @@ $msgs = [
     'bademail'   => ['err', 'E-mail nemá platný tvar.'],
     'emailtaken' => ['err', 'Tento e-mail už používá jiný účet.'],
     'badcurrent' => ['err', 'Stávající heslo nesedí. Heslo nebylo změněno.'],
+    'nicktaken'  => ['err', 'Tuhle přezdívku už má jiný hráč. Zvol prosím jinou.'],
     'mismatch'   => ['err', 'Nová hesla se neshodují.'],
     'short'      => ['err', 'Nové heslo musí mít aspoň 6 znaků.'],
     'm_bad'      => ['err', 'Vyplň jméno a platný e-mail nového člena.'],

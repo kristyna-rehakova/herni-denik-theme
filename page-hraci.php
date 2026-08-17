@@ -12,7 +12,11 @@ $can_manage = hd_can_manage();       // upravit / smazat jen admin
 $me_player  = hd_current_player_id(); // svého hráče smí upravit i člen
 ?>
 <?php if (isset($_GET['hd_pl'])): ?>
-  <div class="hd-flash ok"><?php echo $_GET['hd_pl'] === 'del' ? '🗑️ Hráč byl přesunut do koše.' : '✅ Hráč byl uložen.'; ?></div>
+  <?php if ($_GET['hd_pl'] === 'nickdup'): ?>
+    <div class="hd-flash err">⚠️ Tuhle přezdívku už má jiný hráč. Zvol prosím jinou.</div>
+  <?php else: ?>
+    <div class="hd-flash ok"><?php echo $_GET['hd_pl'] === 'del' ? '🗑️ Hráč byl přesunut do koše.' : '✅ Hráč byl uložen.'; ?></div>
+  <?php endif; ?>
 <?php endif; ?>
 
 <?php if ($can_add): ?>

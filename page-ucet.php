@@ -33,13 +33,15 @@ if ($acc === 'm_ok'):
     $tk = 'hd_newmember_' . get_current_user_id();
     $nm = get_transient($tk); delete_transient($tk);
     $ml = is_array($nm) ? ($nm['login'] ?? '') : '';
-    $mp = is_array($nm) ? ($nm['pass'] ?? '') : ''; ?>
+    $mp = is_array($nm) ? ($nm['pass'] ?? '') : '';
+    $mailed = is_array($nm) && !empty($nm['mailed']); ?>
     <div class="hd-flash ok">
-      ✅ Člen byl vytvořen. Předej mu přihlašovací údaje:
+      ✅ Člen byl vytvořen<?php echo $mailed ? ' a přihlašovací údaje mu dorazily e-mailem 📧' : ''; ?>.
       <div class="acc-creds">
         <div>👤 Uživatelské jméno: <code><?php echo esc_html($ml); ?></code></div>
         <?php if ($mp): ?><div>🔑 Heslo: <code><?php echo esc_html($mp); ?></code> <span class="hd-hint">(zobrazí se jen teď – ulož si ho)</span></div>
         <?php else: ?><div class="hd-hint">Heslo sis nastavil/a ručně.</div><?php endif; ?>
+        <?php if (!$mailed): ?><div class="hd-hint">⚠️ E-mail se možná neodeslal – údaje mu předej ručně.</div><?php endif; ?>
         <div class="hd-hint">Přihlášení: <?php echo esc_url(wp_login_url()); ?></div>
       </div>
     </div>

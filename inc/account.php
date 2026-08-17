@@ -125,10 +125,47 @@ function hd_handle_add_member() {
     }
 
     // údaje ulož bezpečně do transientu (ne do URL) – na stránce se ukážou jednou a smažou
+    // pošli novému členovi e-mail s přihlašovacími údaji
+    $mailed = hd_send_member_email($email, $name, $login, $pass);
+
     set_transient('hd_newmember_' . get_current_user_id(), [
-        'login' => $login,
-        'pass'  => $generated ? $pass : '', // heslo jen když ho vygeneroval systém
+        'login'  => $login,
+        'pass'   => $generated ? $pass : '', // heslo jen když ho vygeneroval systém
+        'mailed' => $mailed ? '1' : '',
     ], 5 * MINUTE_IN_SECONDS);
     wp_safe_redirect(add_query_arg('hd_acc', 'm_ok', $back)); exit;
 }
 add_action('admin_post_hd_add_member', 'hd_handle_add_member');
+
+/** E-mail novému členovi: uživatelské jméno, heslo (s výzvou ke změně) a odkaz do deníku. */
+function hd_send_member_email($to, $name, $login, $pass) {
+    $home = home_url('/');
+    $subject = '🎲 Tvůj účet do Herního deníku';
+    $b = esc_html($name);
+    $l = esc_html($login);
+    $p = esc_html($pass);
+    $u = esc_url($home);
+    $html = '
+<div style="font-family:Arial,Helvetica,sans-serif;max-width:520px;margin:0 auto;color:#3f4536">
+  <div style="background:linear-gradient(135deg,#FFC125,#F0A400);padding:22px;border-radius:14px 14px 0 0;text-align:center">
+    <div style="font-size:24px;font-weight:bold;color:#5a4712">🎲 Můj herní deník</div>
+  </div>
+  <div style="background:#ffffff;border:1px solid #dde5cc;border-top:none;padding:24px;border-radius:0 0 14px 14px">
+    <p>Ahoj <strong>' . $b . '</strong>,</p>
+    <p>byl ti vytvořen účet do našeho <strong>Herního deníku</strong> – místa, kam si zapisujeme odehrané deskovky a partie. 🎲</p>
+    <p style="margin-bottom:6px"><strong>Tvoje přihlašovací údaje:</strong></p>
+    <table style="border-collapse:collapse;margin:0 0 8px">
+      <tr><td style="padding:6px 10px;color:#7d8570">Uživatelské jméno:</td><td style="padding:6px 10px"><strong>' . $l . '</strong></td></tr>
+      <tr><td style="padding:6px 10px;color:#7d8570">Heslo:</td><td style="padding:6px 10px"><strong>' . $p . '</strong></td></tr>
+    </table>
+    <p style="background:#fdeede;border:1px solid #f0c9a0;border-radius:10px;padding:10px 12px">⚠️ <strong>Po prvním přihlášení si prosím heslo změň</strong> – vpravo nahoře <em>⚙️ Můj účet → Změna hesla</em>.</p>
+    <p style="text-align:center;margin:22px 0">
+      <a href="' . $u . '" style="background:#eeb088;color:#3f4536;padding:13px 26px;border-radius:10px;text-decoration:none;font-weight:bold;display:inline-block">Přihlásit se do Deníku</a>
+    </p>
+    <p style="color:#7d8570;font-size:13px">Kdyby odkaz nefungoval, otevři: <a href="' . $u . '" style="color:#5e8b6e">' . esc_html($home) . '</a></p>
+    <p>Hezké hraní! 🎲</p>
+  </div>
+</div>';
+    $headers = ['Content-Type: text/html; charset=UTF-8'];
+    return wp_mail($to, $subject, $html, $headers);
+}

@@ -4,7 +4,7 @@
  */
 if (!defined('ABSPATH')) exit;
 
-define('HD_VERSION', '0.28.3');
+define('HD_VERSION', '0.29.0');
 
 function hd_setup() {
     add_theme_support('title-tag');

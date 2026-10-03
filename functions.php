@@ -4,7 +4,7 @@
  */
 if (!defined('ABSPATH')) exit;
 
-define('HD_VERSION', '0.29.2');
+define('HD_VERSION', '0.30.0');
 
 function hd_setup() {
     add_theme_support('title-tag');
@@ -19,6 +19,18 @@ function hd_assets() {
     wp_enqueue_style('herni-denik', get_stylesheet_uri(), ['hd-fonts'], HD_VERSION);
 }
 add_action('wp_enqueue_scripts', 'hd_assets');
+
+/**
+ * Favicon = kostička 🎲 (místo výchozího „W" WordPressu) – web, přihlášení i admin.
+ */
+function hd_favicon_tag() {
+    $svg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">'
+         . '<text x="50%" y="52%" dominant-baseline="central" text-anchor="middle" font-size="56">🎲</text></svg>';
+    echo '<link rel="icon" href="data:image/svg+xml,' . rawurlencode($svg) . '">' . "\n";
+}
+add_action('wp_head', 'hd_favicon_tag');
+add_action('login_head', 'hd_favicon_tag');
+add_action('admin_head', 'hd_favicon_tag');
 
 require get_template_directory() . '/inc/opcache.php';
 require get_template_directory() . '/inc/helpers.php';

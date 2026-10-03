@@ -68,6 +68,21 @@ function hd_import_page() {
     if (!empty($_POST['hd_fill_ranges']) && check_admin_referer('hd_fill_ranges', 'hd_fill_nonce')) {
         hd_run_fill_ranges();
     }
+    if (!empty($_POST['hd_opcache_flush']) && check_admin_referer('hd_opcache_flush', 'hd_opc_nonce')) {
+        $ok = function_exists('opcache_reset') ? @opcache_reset() : null;
+        echo '<div class="notice notice-' . ($ok ? 'success' : 'warning') . '"><p>'
+            . ($ok ? '✅ OPcache vyčištěn – nový kód šablony se teď projeví.'
+                   : '⚠️ opcache_reset není k dispozici nebo je na serveru omezen. Použij jednorázový soubor pro vyčištění (viz návod).')
+            . '</p></div>';
+    }
+
+    // Tlačítko: vyčistit serverovou cache PHP (OPcache), když se změny po aktualizaci neprojeví
+    echo '<hr style="margin:22px 0"><h2>🧹 Vyčistit OPcache</h2>';
+    echo '<p>Když se po aktualizaci šablony změny neprojeví (např. rozmezí počtu hráčů), vyčisti serverovou cache PHP.</p>';
+    echo '<form method="post"><input type="hidden" name="hd_opcache_flush" value="1">';
+    wp_nonce_field('hd_opcache_flush', 'hd_opc_nonce');
+    submit_button('Vyčistit OPcache teď', 'secondary', 'hd_opc_go');
+    echo '</form>';
 
     // Rychlé tlačítko: doplní rozsahy z dat zabudovaných v šabloně (bez nahrávání)
     echo '<hr style="margin:22px 0"><h2>🔢 Doplnit rozsahy hráčů a času</h2>';

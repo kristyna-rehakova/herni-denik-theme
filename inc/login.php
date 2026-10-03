@@ -7,6 +7,20 @@ if (!defined('ABSPATH')) exit;
 add_filter('login_headerurl', function () { return home_url('/'); });
 add_filter('login_headertext', function () { return get_bloginfo('name'); });
 
+/**
+ * Po přihlášení poslat uživatele na web (Hernu), ne do wp-adminu.
+ * Když login přišel z konkrétní front-end stránky, vrátí ho na ni;
+ * jinak (prázdný cíl nebo cíl míří do wp-adminu) → domů na Hernu.
+ * Vlastník se do wp-adminu dostane přes admin lištu / přímý odkaz.
+ */
+add_filter('login_redirect', function ($redirect_to, $requested, $user) {
+    if (!($user instanceof WP_User)) return $redirect_to;
+    if (empty($redirect_to) || strpos($redirect_to, '/wp-admin') !== false) {
+        return home_url('/');
+    }
+    return $redirect_to;
+}, 10, 3);
+
 add_action('login_enqueue_scripts', function () {
     wp_enqueue_style('hd-login-font', 'https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700&display=swap', [], null);
     ?>
